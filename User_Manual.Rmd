@@ -1,0 +1,856 @@
+---
+title: "Methodological advancements on the use of administrative data in Official
+  Statistics - User Manual"
+author: "Natalie Shlomo, Sook Kim, University of Manchester"
+date: "Dec 2022"
+output:
+  word_document:
+    toc: yes
+    reference_docx: RStudio_template_Dec2022.docx
+editor_options:
+  markdown:
+    wrap: 68
+---
+
+```{r, eval=T, include=F}
+    # library(blogdown)
+    # blogdown::hugo_version()
+```
+
+<!-- html_document: -->
+
+<!--   toc: true -->
+
+<!--   toc_float: true -->
+
+<!--   theme: yeti -->
+
+This is the manual accompanying R code publicly available on GitHub
+for the project, *Methodological advancements on the use of
+administrative data in Official Statistics,* which is led by
+Professor Natalie Shlomo. As part of the research team, Sook Kim
+documented the manual.
+
+# Project aims and objectives
+
+The Office for National Statistics (ONS) have strategic priorities
+on embedding and advancing the use of administrative data into their
+official statistics processes. Their immediate priority is the use
+of administrative data in the quality assurance of the 2021 census
+and the production of administrative-based population estimates
+(ABPEs). A more long-term priority is the Population Statistics
+Transformation Programme which will feed into a recommendation to
+Government due in 2023 on the future of census and population
+statistics. In particular, the objective is to create population
+characteristic estimates from administrative and integrated data
+sources.
+
+This manual concerns one of the sub-projects related to the quality
+framework for a single administrative data source. Here. we restrict
+the scope to distance metrics and R-indicators.
+
+# Quality indicators
+
+Sources of error for representation of administrative data are frame
+errors, selection errors and missing redundancy. We focus here on
+errors arising from coverage and representativity of administrative
+data, particularly when the data is streamed over time such as tax
+data for the business register or migration statistics for
+population estimates. It is vital that statistical agencies have
+good quality indicators to ensure the fit of administrative data to
+the population and to identify those sub-groups that are missing or
+over-covered, especially when the administrative data is used to
+quality assure other data sources such as surveys or a census.
+
+We develop new methodology for calculating a quality indicator to
+measure representativeness and coverage.
+
+## R-indicators
+
+One such indicator is the R-indicator and its related partial
+R-indicators that were originally designed to assess the
+representativeness of responses from a survey and are particularly
+useful as an objective function in adaptive survey designs where
+data are collected over time (Schouten, et al. 2009, Schouten and
+Shlomo, 2009). The R-indicators measure the contrast between those
+who are missing and not missing in the data and identify those
+groups that are not represented in the data. We will investigate the
+usefulness of this framework to assess the representativeness and
+coverage of administrative data compared to a target population.
+
+## Using sample-based frame information as benchmark
+
+Recent research by Bianchi, et al. 2019 adapts the R-indicator to
+the case where only population auxiliary information are available
+instead of sample-based frame information. We draw upon the approach
+by Bianchi, et al. 2019, and utilise sample-based auxiliary
+information.
+
+## Distance metrics with Standardization
+
+We look at other quality indicators. These are essentially distance
+metrics, such as the indicator of dissimilarity (Duncan and Duncan,
+1955; Agresti, 2013). We also draw upon Hellinger's distance (HL)
+and Kull-back-Leibler divergence (KL).
+
+First, we define categories of categorical variable (or
+cross-classified) categorical variables by 𝑘, 𝑘=1, 2, ...𝐾.
+
+Let 𝑝~𝑘~ be the proportion of individuals in 𝑘 in the census
+(weighted survey count).
+
+Let 𝑞~𝑘~ be the proportion of individuals in 𝑘 in the administrative
+data.
+
+The Entropy is $$-\sum_{k}p_{k}log(p_{k})$$
+
+The formulae for three distance metrics are given below. ![Distance
+metrics](image/Distance_metrics_2.png)
+
+# Download and inspect the contents
+
+## 1 Download
+
+Please visit the github site here: [qualadmin
+link](https://github.com/sook-tusk/qualadmin). Click on `Code` at
+the top-right corner. Then, click on `Download ZIP` to download to
+your local machine.
+
+Now, the downloaded folder needs to be placed in the meaningful
+location. We recommend users decide the appropriate Drive (C, D, E,
+F, etc) to house the downloaded contents. Then, **create a new
+folder** called `admindata` in File Explorer of your PC. Users can
+customise the new folder name as appropriate. This is your
+**starting path**.
+
+The screenshot showing **starting path**:
+
+![Starting_path](image/Starting_path.png)
+
+Under this Starting path, `F:/admindata`, place the downloaded
+folder from GitHub. Extract the zip folder as necessary.
+
+As such, `F:/admindata/qualadmin` becomes the MASTER project folder.
+We'll set it as working directory in RStudio later.
+
+> Notice that the terms, folder, directory, and path are used
+> interchangeably in the user manual.
+
+## 2 Downloaded contents explained
+
+### Example datasets
+
+We provide two example data sources.
+
+| Data type      | File name                           |
+|----------------|-------------------------------------|
+| Administrative | public_release_admin.csv            |
+| Census         | pop_u\_short_before_sim_5vars.Rdata |
+
+### Folders and R scripts
+
+Under `F:\admindata\qualadmin` folder, you'll be presented with the
+following contents. ![contents](image/Contents_v2.png)
+
+The **"User_manual"** folder contains instructions on using the
+provided R code files.
+
+The users do not need to do anything with the folder titled
+**"Functions"**. These pre-defined functions are used to either
+enclose complex procedures or perform repetitive tasks including
+cleaning and computing quality indicators. There are two files
+containing pre-defined functions. There is no need to run function
+files independently.
+
+The functions will be automatically called in when the three main R
+script files are run: `2_Prep_Wtsample_Freq_Table.R`
+`3_A_Distance_Metrics.R` `3_B_R-indicator.R`
+
+The `2_Prep_Wtsample_Freq_Table.R` file creates necessary data
+needed to compute distance metrics and R-indicators. The master
+file, `3_MASTER_Run_AB.R` runs the above *two* main R script files,
+(`3_A_Distance_Metrics.R` `3_B_R-indicator.R`) automatically in
+sequence.
+
+The first three files, `0_Custom_Path.R`, `1_Create_Folders.R` and
+`1_Install_Packages.R` can be run to get ready to run the above main
+analysis files, as discussed in the following section.
+
+# Launch RStudio and get ready
+
+## 1 Open the entire master folder in RStudio
+
+First, launch RStudio. Then, we need to **open the entire folder**
+`F:/admindata/qualadmin` where downloaded materials are located.
+
+Unfortunately, RStudio has no feature in the menu, but you could do
+so by accessing **Files** tab. Click on `...` as shown below. ![Open
+folder](image/Open_folder.png) Then, locate the master folder. In
+our example, it is `F:/admindata/qualadmin`.
+
+## 2 Set custom path
+
+Click open the R script file, `0_Custom_Path.R`. Customise the
+starting path as needed, and set the path to indicate the master
+folder. The example code is:
+
+```{r, eval=F}
+    # Starting path (CUSTOMISE PLEASE)
+    setwd("F:/admindata")
+
+    # Master project folder (USE AS IT IS)
+    setwd("./qualadmin")
+
+    # Check your current directory
+    getwd()
+```
+
+Please ensure to use a single forward slash `/` as above. R will
+print an error when backward slash `\` is used in path. For
+instance,
+
+```{r, eval= F}
+    setwd("F:\admindata)`
+    Error: '\a' is an unrecognized escape in character string starting ""F:\a"
+```
+
+> Please ensure your working directory is set at the master project
+> path throught the analytical steps.
+
+## 3 Automatically create output folders
+
+The three main R script files `2_Prep_Wtsample_Freq_Table.R`,
+`3_A_Distance_Metrics.R`, `3_B_R-indicator.R` produce outputs. The
+outputs may be text, figure or in spreadsheet form. For the existing
+programmes to work, users need to create dedicated output folders.
+
+To do so, please click on the `1_Create_Folders.R` file to open.
+Then run line by line. The resulting folder structure is provided
+here:
+
+![Outputs_folder](image/Outputs_folder.png)
+
+## 4 Install packages
+
+The final preparation step is installing packages. Open
+`1_Install_Packages.R` file, and run line by line.
+
+```{r, eval = F, include = T}
+        #-----------------------------------
+        # Install packages (Run once)
+        #-----------------------------------
+        
+        install.packages("ggplot2")
+        install.packages("tidyverse")
+        
+        install.packages("car")
+```
+
+Now, you're all set to proceed with quality measures indicators!
+
+```{r, eval = T, include = FALSE}
+        library(xaringan)
+        # To livepreview, type in the console xaringan::inf_mr()
+        source("2_Prep_Wtsample_Freq_Table.R")
+```
+
+# RUNNING 2_Prep_Wtsample_Freq_Table.R
+
+This code file consists of two parts: generating a weighted sample
+data, and preparing an auxiliary file for R-indicators.
+
+## PREP PART 1: Generate a weighted sample data
+
+-   Open the `2_Prep_Wtsample_Freq_Table.R` file.
+-   Step 1: Load a small percentage of Census data. It is called
+    **pop_u\_short_before_sim_5vars** in the provided example code.
+
+```{r eval=F, error = F}
+        #H---------------------------------------
+        ##> 1. Load Census data
+        #H--------------------------------------
+
+        load("pop_u_short_before_sim_5vars.RData")
+        df  <- pop_u_short_before_sim_5vars
+        dim(df)   # obs = 1163659
+        names(df)
+```
+
+> In our example Census data, we have 1,163,659 observations with
+> five categorical variables including `geography`, `sex`,
+> `age groups`, `ethnic groups`, and `economic activity status`. One
+> can declare which variable to tabulate. Here, we declare all five
+> variables using `var` object[^1].
+
+[^1]: As the `var` object is treated as global macro, the programme
+    runs automatically using the information stored in global macro,
+    and produces the results.
+
+```{r, eval = F, include = TRUE}
+  var <- c("geog1", "sex", "agecode1",
+            "eth_code5", "econg")
+```
+
+The description of categories, and distribution is shown below.
+
+| Variable  | Category | Description                           | N       | (%)    |
+|--------------|--------------|--------------|--------------|--------------|
+| Total     |          |                                       | 1163659 |        |
+| geog1     | 1        | LA codes                              | 116128  | (10.0) |
+|           | 2        | LA codes                              | 150139  | (12.9) |
+|           | 3        | LA codes                              | 137520  | (11.8) |
+|           | 4        | LA codes                              | 170624  | (14.7) |
+|           | 5        | LA codes                              | 90873   | (7.8)  |
+|           | 6        | LA codes                              | 498375  | (42.8) |
+| sex       | 1        | male                                  | 564905  | (48.5) |
+|           | 2        | female                                | 598754  | (51.5) |
+| agecode1  | 1        | 16-20                                 | 82426   | (7.1)  |
+|           | 2        | 21-25                                 | 94643   | (8.1)  |
+|           | 3        | 26-30                                 | 110296  | (9.5)  |
+|           | 4        | 31-35                                 | 120398  | (10.3) |
+|           | 5        | 36-40                                 | 119393  | (10.3) |
+|           | 6        | 14-45                                 | 101711  | (8.7)  |
+|           | 7        | 46-50                                 | 94209   | (8.1)  |
+|           | 8        | 51-55                                 | 100159  | (8.6)  |
+|           | 9        | 56-60                                 | 77799   | (6.7)  |
+|           | 10       | 61-65                                 | 65833   | (5.7)  |
+|           | 11       | 66-70                                 | 57305   | (4.9)  |
+|           | 12       | 71-75                                 | 51263   | (4.4)  |
+|           | 13       | 76-80                                 | 43678   | (3.8)  |
+|           | 14       | 81+                                   | 44546   | (3.8)  |
+| eth_code5 | 1        | White                                 | 1081812 | (93.0) |
+|           | 2        | Mixed/Multiple ethnic groups          | 10487   | (0.9)  |
+|           | 3        | Asian/Asian British                   | 46446   | (4.0)  |
+|           | 3        | Black/African/Caribbean/Black British | 16268   | (1.4)  |
+|           | 4        | Other ethnic group                    | 8646    | (0.7)  |
+| econg     | 1        | In employment(FT, PT)                 | 689140  | (59.2) |
+|           | 2        | Unemployed                            | 27744   | (2.4)  |
+|           | 3        | Out of workforce                      | 446775  | (38.4) |
+
+> Using this prior information on the population distribution (based
+> on Census), we can mimic the distribution in a random sample. See
+> the next step.
+
+-   Step 2: Then, we draw a random sample 1:50.
+-   Step 3: From the randomly selected sample
+    (`1163659/50 = 23273`), we then obtain frequency table of
+    categorical variables (count of categories). Users can run the
+    pre-defined function, `fn_maxvar5_freq_table()` to perform the
+    task. The function[^2] automatically obtains counts and
+    structure the output in long form, organised by each variable,
+    and by its discrete category.
+
+[^2]: We also provide `fn_maxvar4_freq_table()` for users who
+    declare four categorical variables
+
+```{r, eval = F, include = T}
+        fn_maxvar5_freq_table()
+```
+
+> This procedure is to *assess distribution* of categories in a
+> random sample (N = 23273). Based on the counts of the randomly
+> selected sample, we multiply the counts by 50. One may wonder why
+> we multiply. As we *reduced* the census sample by drawing a random
+> sample by the 1:50 ratio, we need to *convert* the shrank sample
+> back to the original size (with the priori distribution). That's
+> why we multiply by 50 (Weighted Sample N = 23273 \* 50 = 1163650).
+> This completes the process of generating weighted sample survey
+> data.
+
+-   Step 4: Carry out checks to see if the calculated frequency
+    tables are accurate.
+
+```{r }
+        freq_table[1:8, 1:9]
+```
+
+> When we printed the first 8 lines and 10 variables, we can see the
+> count, `n`, and the corresponding proportion, `p` by each
+> variable. The following code obtains the total observation size
+> and confirms that the total proportion adds up to 1, for `geog1`
+> variable. Here, the total observation size can be viewed as the
+> population size.
+
+```{r }
+        # Check whether the total adds up to 1
+        sum(freq_table[1:6, "n"])
+        sum(freq_table[1:6, "p"])
+
+```
+
+-   Step 5: Rename and save.
+
+-   Step 6: Export the output frequency table in Excel with the file
+    name, **Weightedsample_freq_table.xlsx**.
+
+-   Step 7: Save the R objects as RData. Done.
+
+## PREP PART 2: Auxiliary file for R-indicators
+
+Thus far, we have created a weighted sample data based on the random
+sampling procedure, and obtained both one-way and two-way frequency
+tables. We also identified the population size of 1,116,350
+(`popsize` = 1163650).
+
+For R-indicator calculations, we need to compute `meanpop` by
+variables which are `geography`, `sex`, `age groups`,
+`ethnic groups`, and `economic activity status`.
+
+```{r, eval = F, include = TRUE}
+        # Compute meanpop
+        auxiliary  <- freq_table %>%
+                  filter(oneway == 1) %>%
+                  group_by(by1) %>%
+                  mutate(meanpop = n / popsize) %>%
+                  ungroup()  %>%
+                  dplyr::select(seq, count = n, by1,
+                   v, by2, meanpop, raw_n)
+```
+
+To do so, we first remove two-way and keep the one-way frequency
+table only. Then, by variable-level, which is indicated by `by1`, we
+compute `meanpop`. As seen before, the count of each category is
+stored in `n`. The `meanpop` is obtained by dividing `n` by
+`popsize`. For example, the value of **meanpop** for first category
+of `geog1` is calculated as `113250/1163650 = 0.0973`, and the
+second category of `geog1` is `148400/1163650 = 0.1275` and so on.
+
+Finally, we add the `popsize` in the first row, to complete the
+Auxiliary file.
+
+Let's look at the Auxiliary file:
+
+```{r}
+        print(wtsample_auxiliary_econg)
+```
+
+# RUNNING 3A_Distance_Metrics.R
+
+```{r, eval = T, include = FALSE}
+        source("3_A_Distance_Metrics.R")
+```
+
+To calculate distance metrics, we first obtain one-way, and two-way
+frequency tables of categorical variables, and calculates
+proportions of each sub-category by each data source. Next, we
+combines master (benchmark) and admin freq tables. Then, we create
+domains for quality indicators, and finally compute distance metrics
+as part of quality indicators. We offer three different types of
+distance metrics. To allow comparison across the metrics, we
+standardise the calculations.
+
+Users can also produce a summary table of three types of distance
+metrics, and visualise the results.
+
+The preliminary step is to ensure we have benchmark data. Simply
+*source* the previous file as below to update it.
+
+```{r, eval = F, include = TRUE}
+        source("2_Prep_Wtsample_Freq_Table.R")
+```
+
+-   Step 1: read admin data
+
+```{r}
+        df  <- read_csv("public_release_admin.csv")
+        tail(df)
+```
+
+The last six observations of the example admin data is shown above.
+As the person id goes up to 1033664, we can see there are `1033664`
+observations in admin data. We also notice that `geog1a` is used
+instead of *geog1*. As such, we declare all five variables for
+tabulations.
+
+```{r, eval = F, include = T}
+  var <- c("geog1a", "sex", "agecode1",
+            "eth_code5", "econg")
+```
+
+-   Step 2: Obtain admin freq tables.
+
+As mentioned in the previous section, we obtain frequency table of
+categorical variables (count of categories). Users can run the
+pre-defined function, `fn_maxvar5_freq_table()` to perform the task.
+The function[^3] automatically obtains counts and structure the
+output in long form, organised by each variable, and by its discrete
+category.
+
+[^3]: We also provide `fn_maxvar4_freq_table()` for users who
+    declare four categorical variables
+
+Once the frequency tables are obtained, we rename the object as
+`Admin_f_table_one`. Let's inspect `Admin_f_table_one`.
+<!-- table width no problems. All prints fine!!! -->
+
+```{r}
+        head(Admin_f_table_one)
+```
+
+```{r}
+       tail(Admin_f_table_one)
+```
+
+-   Step 3: Merge admin + Weighted sample freq tables
+
+```{r, eval = F, include = TRUE}
+       fn_merge_one_admin_wtsample_f_table_temp()
+```
+
+The code above executes merging two data sources.
+
+-   Step 4: Create domains of quality indicators
+
+```{r, eval = F, include = TRUE}
+        fn_create_domain_temp()
+```
+
+To check the domains, we can use *Janitor* package's `tabyl`
+function[^4]. The function creates 15 domains, including five single
+variables' domain, and ten bivariate domains.
+
+[^4]: This is essentially almost identical to
+    `table(display_domain$fct_domain)`, but the approach `tabyl`
+    produces percent by default
+
+```{r}
+        display_domain %>% tabyl(fct_domain)
+```
+
+-   Step 5: Compute distance metrics
+
+Run the functions to compute three types of distance metrics.
+
+```{r, eval = F, include = T}
+        fn_unstd_distance_metrics_full()
+        fn_unstd_distance_metrics_tidy()
+```
+
+-   Step 6: Standardise distance metrics
+
+-   Step 7: Reshape, then tidy
+
+From wide form, the outputs have been reshaped to long form. Then,
+we keep standardised solutions. The results are as follows:
+
+```{r}
+      df <- distance_metrics_long
+      # std_test(1-Duncan, 1-HD, 1-KL) only
+      df <- df %>% filter(std_test_use == 1)
+
+      df[1:9, c(1:2, 4:5, 9)]
+```
+
+-   Step 8: Plot the distance metrics
+
+```{r}
+         plot(p)
+```
+
+# RUNNING 3B_R-indicator.R
+
+```{r, eval = T, include = FALSE}
+        rm(list = ls())
+        source("3_B_R-indicator.R")
+```
+
+The file computes the overall R-indicator. Users can also proceed
+with computing **partial** R-indicators by category level, and
+variable level. The procedure can be computationally extensive. This
+is noted in the relevant section, so that users can allow some time
+to execute the code.
+
+-   Step 1: Benchmark mean population ready
+
+Load auxiliary file and remove the last category From each
+categorical variable (`group_by(by1)`), we identify the last
+category (`max(by2)`). We then remove the last
+category(`dplyr::select(-c(lastcat_, lastcat))`). Here, we
+explicitly instruct R to use `dplyr` package to access `select`
+function[^5].
+
+[^5]: This is to avoid warnings messages from R when R searches for
+    a particular function from two different packages.
+
+```{r, eval = F, echo = F, include = T}
+        col_auxiliary <- auxiliary_temp %>%
+             group_by(by1) %>%
+             mutate(
+              lastcat_ = ifelse(by2 == max(by2),
+                    1, 0),
+              lastcat = ifelse(seq == 1, 0, lastcat_)
+            ) %>%
+             filter(lastcat == 0) %>%
+             dplyr::select(-c(lastcat_, lastcat)) %>%
+             ungroup()
+```
+
+We only need `meanpop`. It is shown in a single column (column
+vector). Let's check.
+
+```{r, eval = T, include = T}
+        # Print meanpop
+        print(col_auxiliary[1:nrow(col_auxiliary), "meanpop"],
+            n = nrow(col_auxiliary))
+```
+
+-   Step 2: Keep wtsample distributions as row vectors
+
+We then transpose `meanpop` to a single row format (row vector).
+Now, our benchmark data is ready. The next step is open the
+corresponding administrative data, and carry out computing
+R-indicators.
+
+-   Step 3: Compute R-indicators
+
+Users can use pre-defined functions. Please allow a minute to
+execute.
+
+```{r, eval = F, include = T}
+        aa  <- read_csv("public_release_admin.csv")
+
+        nrow(aa) # 1033664
+
+        df      <- NULL
+        between <- NULL
+        partial <- NULL
+        partialtemp <-  NULL
+        fn_overall_r_indicator_1()
+        fn_overall_r_indicator_2()
+        fn_overall_r_indicator_3()
+        fn_overall_r_indicator_4()
+```
+
+Users can consult `Functions/2_Functions_R-indicators.R` file for
+more details and operationalisation.
+
+-   Step 4: Save in Excel and inspect
+
+At this stage, users can inspect accordingly. Let's have a look.
+Here, we can see the overall R-indicator is estimated as 0.496 based
+on the administrative data (N=1033664). Looking at the
+variable-level R-indicator (see rows 4-8), geog1a was seen to have
+the greatest R-indicator (0.04) compared to econg (0.0002).
+
+```{r}
+    partial[1:17, c(1:2, 4, 8:10)] 
+```
+
+-   Step 5: Scatterplot
+
+R-indicator by the variable level.
+
+```{r, eval = T, include = T}
+      plot(p1)
+```
+
+R-indicator by the category-level.
+
+```{r, eval = T, include = T}
+       plot(p2)
+```
+
+This concludes the manual. Thank you for taking the time reading the
+material. Please get in touch with any query or errata at
+[fanfurcada\@gmail.com](mailto:fanfurcada@gmail.com){.email}.
+
+If you need technical support, please consult Q & A.
+
+# Q & A
+
+## How do I know where to customise the code to suit my needs?
+
+Unless indicated as "Customise as needed", users can run the code as
+it is. Please consult each code file.
+
+## How to use **Starting path** in multiple machines?
+
+If users plan to use different machines, simply by changing the
+"starting path", users can carry out the analysis with minimal
+disruption. To achieve this, please ensure to use the consistent
+master project folder name.
+
+## What are the commonly used commands?
+
+Most commonly used commands in the tidyverse package are:
+
+      arrange : sort variables.
+      bind_rows: append multiple dataframes.
+      mutate  : manipulate variables, and
+                create new variables based on old variables.
+      select  : order, and keep(drop) variables of interest.
+      shell.exec: launch a software and opens the target file (Windows PC only)
+
+## How to free up memory space and speed up RStudio?
+
+You can remove objects that you no longer need.
+
+      # To remove objects except for certain objects
+      ls()
+      keepobjectslist <- c("a", "b", "c")
+      rm(list = ls()[!ls() %in% keepobjectslist])
+      ls()
+
+## I get error messages when a pre-defined function is used.
+
+Users can inspect the codes used in the function, and identify the
+issues. It is recommended NOT edit the function file directly, as
+the functions are used repeatedly, and the interlinked sections may
+not run as expected. Where preferable, users may copy the codes in
+the function, and use locally with minor tweaks.
+
+## How do I modify pre-defined functions?
+
+Users can modify `1_Functions` and `2_Functions_R-indicators.R`
+under *Functions* folder.
+
+```{r}
+# 1_Functions.R
+fn_output_folder_path <- function() {
+
+  currentdate <<- Sys.Date()
+  txtpath   <<- "Output/01-Txt/"
+  figpath   <<- "Output/02-Figure/"
+  xlsxpath  <<- "./Output/03-ExcelOutput/"
+  Rdatapath <<- "Output/04-RData/"
+}
+```
+
+We can check how the output folder names are set as path to save the
+results during the analytical process.
+
+```{r}
+fn_output_folder_path()
+```
+
+Let's run the function. We can see that xlsxpath is set as
+`"./Output/03-ExcelOutput/"`.
+
+```{r}
+xlsxpath
+```
+
+Let's customise the xlsxpath, by renaming the folder name. If we
+customise `1_Functions.R` file, we can edit the information enclosed
+in the brackets. Notice that we use `<<-` with functions so that the
+object created by a function will exist in the global R environment.
+This is very important.
+
+Alternatively, We could ignore the pre-defined function and just
+write relevant lines of code and keep it in the main R script file.
+For instance, we could put output_folder_path at the top of the
+`2_Prep_Wtsample_Freq_Table.R`. Here, we edited the `xlsxpath`.
+Notice that `fn_output_folder_path <- function() {  }` is removed.
+
+```{r}
+    xlsxpath_2 <- "./Output/03-Excel/"
+    
+    xlsxpath_2
+    #H---------------------------------------
+    ## > Step 1. Load Census data
+    #H--------------------------------------
+    # load("pop_u_short_before_sim_5vars.RData")
+```
+
+Notice that we use `<-`. Using `<<-` is not necessary here. Users
+can remember the usage of `<-` and can modify the functions as
+appropriate, should the function incurs errors.
+
+## Technial notes and programming strategies
+
+When loop is used, base R functions were used (table, tapply, etc).
+For data manipulation, tidyverse package was used extensively. This
+strategy is partly to improve readability of the code.
+
+To enhance users' workflow, output files are programmed to launch
+using the pre-defined functions.
+
+## Can I ignore Warning messages?
+
+Some packages alert users with compatibility issues arising from old
+version. These can be ignored. For example,
+
+      library("fastDummies")
+      Warning message:
+      package 'fastDummies' was built under
+      R version 4.1.2
+
+      library(rlist)
+      Warning message:
+      package 'rlist' was built under R version 4.1.2
+
+## Troubleshooting
+
+### Unused argument error
+
+For example, `sim %>% select(geog1a)` the select command can cause
+an error:
+
+    Error in select(., geog1a) :
+      unused arguments (geog1a)
+
+This maybe due to the conflict in packages.
+
+The error can be fixed by adding the name of the package used,
+dplyr, explicitly. `sim %>% dplyr::select(geog1a)`
+
+### I get errors when computing...
+
+Please inspect zero cells, and ensure 0 (numeric value) is entered
+for n and perc, as well as admin_n and admin_perc. Errors may occur
+with NA coding and data attributes(character, factor, numeric).
+
+### I am experiencing slowness in computation.
+
+R can be not responsive if memory is full. Please identify
+bottlenecks and remove them. It may be due to certain commands. For
+example, `View(object)` command could take a while if the object is
+huge in size. Unless one should inspect the data, suppress the View
+command to expedite the computation where possible.
+
+It can also be the case that for loop functions can be slow as well.
+In some instances, removing objects may help as this procedure can
+free up memory space. See above commonly used commands for more
+information.
+
+### Error: cannot allocate vector of size xxxx.x Gb
+
+If matrix symbols have entered mistakenly, R shows an error message
+like this. Please double check whether there are any mistakes. For
+instance, one may have typed `a*b` instead of `a%*%b`. Users can
+type `memory.limit()` to check the current memory limit and increase
+as necessary.
+
+## What version of R is used?
+
+Tested with Windows PC. R version used: 4.1.1 RStudio version:
+RStudio 2022.07.2 Build 576
+
+# References
+
+Agresti, Alan. Categorical Data Analysis. 2nd ed. Vol. 482. John
+Wiley & Sons, (2013).
+
+Bianchi, Annamaria, Natalie Shlomo, Barry Schouten, Damião N. Da
+Silva, and Chris Skinner. 'Estimation of Response Propensities and
+Indicators of Representative Response Using Population-Level
+Information'. Survey Methodology 45, no. 2 (2019): 217--47.
+
+Duncan, Otis Dudley, and Beverly Duncan. 'A Methodological Analysis
+of Segregation Indexes'. American Sociological Review 20, no. 2
+(1955): 210--17. <https://doi.org/10.2307/2088328.>
+
+R Core Team (2022). R: A language and environment for statistical
+computing. R Foundation for Statistical Computing, Vienna, Austria.
+URL <https://www.R-project.org/>.
+
+Shlomo, Natalie, Barry Schouten, and Vincent de Heij. 'Adaptive
+Survey Designs Using R-Indicators', 2009, 17.
+
+# Citation
+
+Please cite this work as:
+
+Shlomo, Natalie & Kim, Sook (2022). "Methodological advancements on
+the use of administrative data in Official Statistics - User
+Manual", available at <https://github.com/sook-tusk/qualadmin>
