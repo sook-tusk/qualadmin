@@ -1,33 +1,461 @@
 
-#H-------------------------------------
-##> R-indicator_Domain_order ----
-#H-------------------------------------
+#H-----------------------------------
+##> Overall ----
+#H-----------------------------------
 
-fn_r_indicator_domain_order_partial <- function() {
+#H-----------------------------------
+##>> 1 fn_overall_r_indicator_1 ----
+## design_matrix_with_weights
+#H-----------------------------------
 
-  partialtemp  <- partialtemp %>%
-     rename(domain = domain_,
-            R_indicator_temp = R_indicator) %>%
-     mutate(
-      domain = ifelse(seq == 1, "Overall", domain))
+# Ensure popmean_row_vector is loaded first.
+# dplyr:: added to avoid unused argument error
 
-  # View(partialtemp)
+fn_r_indicator_1_vvv <-  function() {
+    aa <<-  aa %>% dplyr::select(any_of(var)) %>%
+                 mutate_at(var, factor)
 
-  # New factor domain variable
-  order  <- c(print(partialtemp$domain))
-  order
-  partialtemp$fct_domain <- factor(partialtemp$domain,
-    levels = order)
+    # Declare macro variables
+    (resppop <<-  nrow(aa))
+    (rrate  <<-  nrow(aa)/popsize)
+    # Check number of categories of each variable.
+    # Run before fn_nvar().
+    (levelsvar <<-  sapply(aa, levels))
+    # Size of categories, last cat
+    fn_nvar()
+    # Obtain last category (to be dropped)
+    # numcat = 35 (in SAS)..
+    fn_lastcat()
+    piinv   <<-  1.0
+    aa <<-  aa %>%
+          mutate(
+            finalwgt = 1/rrate,
+            pi = piinv,
+            piinv  = 1/pi  #1.110273
+          )
+    # View(aa[1:20, ])
+    head(aa) ; dim(aa)
+    aa %>% tabyl(finalwgt)
+    #H--------------------------------------
+    ## dummy variables ----
+    #H--------------------------------------
+    library("fastDummies")
+    # Intecept
+    aa  <<-  aa %>% mutate(des1 = 1)
 
-  levels(partialtemp$fct_domain)
-  partialtemp %>% tabyl(fct_domain)
+    # Allow a minute to execute.
+    aa <<-  dummy_cols(aa, select_columns = var)
+    names(aa)
+    # Only keep dummy variables
+    dummy_from_aa <<-  aa %>%
+                    dplyr::select(-c(1:8))
+    # Prepare dummy varnames
+    # to use as column names of freq counts.
+    dummy_col_names  <<-  names(dummy_from_aa)
+    dummy_col_names
+    #H--------------------------------------------
+    ## Admin summary Freq Table + dummy variables
+    #H--------------------------------------------
+    # Prepare a one-way freq table object as well.
+    # to merge later, domain_ used, seq removed
+    mylist <<-  sapply(aa[, var], oneway_freq_table_no_total)
+    fn_clean_oneway_no_total_temp()
+    temp <<-  cbind(temp, dummy_col_names)
+    temp$cat <<- NULL
+            # dplyr::select(-cat) %>%
+    freq <<-  temp %>%
+            mutate(seq = row_number(),
+            str = str_extract(dummy_col_names, "_\\d+"),
+            n_cat = str_extract(str, "\\d+"),
+            n_cat = ifelse(seq == 1, 1, n_cat))
+    freq <<-  freq %>%
+            mutate(
+            first = ifelse(n_cat == 1, 1, 0),
+            first = ifelse(seq == 1, 0, first),
+            domain_n = cumsum(first)
+            ) %>%
+            dplyr::select(-c(str, first), count = V1) %>%
+            relocate(seq, .before = count) %>%
+            group_by(domain_n) %>%
+            mutate(cum_count = max(cumsum(count))) %>%
+            ungroup() %>%
+            rename(domain_ = dummy_col_names)
+    freq$seq <<- NULL
+    # dummy_col_names
+    # View(freq)
 
-  partial  <<- partialtemp %>%
-      relocate(fct_domain, .after = domain)
+  #H--------------------------------------------
+  ## Completes design matrix with weights
+  #H--------------------------------------------
+  # Save the dataset as vvv
+  vvv  <<- aa
+  # Keep necessary dummy variables only.
+  names(vvv) ;   dim(vvv)
+  temp_remove  <<- c("pi", var, lastcat)
+  vvv  <<- vvv %>%
+        dplyr::select(- one_of(temp_remove))
 
-  cat("End of fn_r_indicator_domain_order_partial")
+  names(vvv) ; dim(vvv)
+
+  # Define maximum numcat (eg. 37)
+  temp_remove  <<- c("finalwgt", "piinv")
+  numcat  <<- vvv %>%
+             dplyr::select(- one_of(temp_remove))%>%
+             length()
+  numcat
+  dim(vvv)
+  head(vvv)
+
+  # Rename as des variables
+  colnames(vvv)  <<- c("finalwgt", "piinv",
+                      paste0("des", 1:numcat))
+  head(vvv)
+  names(vvv)
+
+  # Cross-check
+  # View(aa[1:20,])
+
+  # Reorder, view design matrix
+  vvv  <<- vvv %>%
+        relocate(finalwgt, .after = last_col()) %>%
+        relocate(piinv, .after = last_col())
+  dim(vvv) ; ncol(vvv)
+  vvvfr <<- ncol(vvv)-4
+  vvv[1:10, vvvfr: ncol(vvv)]
+  # vvv[1:10,]
+  View(vvv[1:100,])
+  cat("--- End of design matrix with weights ---")
 }
 
+#H-----------------------------------
+##>> 2 fn_overall_r_indicator_2 ----
+#H-----------------------------------
+# Line 196, warnings ignorable.
+
+fn_r_indicator_2_pop_respmean <- function() {
+
+  #H--------------------------------------------
+  ## admin data Distributions as row vectors ----
+  #H--------------------------------------------
+
+  # Admin data
+  ls()
+  popsize
+
+  finalwgt  <<-  1/rrate
+  table(finalwgt)
+
+  # Treat des1(Intercept) separately. 0.999045879
+  a  <<-  vvv %>% tabyl(des1) # unweighted=1047084
+  a[2]
+
+  aw  <<-  a[2] * finalwgt
+  aw
+  respmean1  <<-  aw/popsize
+  respmean1
+  table(respmean1)
+
+  # ttt generated to use as merging id.
+  ttt  <<-  0
+
+  other_rowvector <<-  cbind(respmean1, finalwgt, piinv, ttt)
+  other_rowvector # respmean1 = 0.9990459
+
+      # Next, des2-des35
+      weighted_counts <<-  function(i) {
+          b  <<-  NULL
+          a  <<-  table(i)
+          aw <<-  as.integer(a[2] * finalwgt)
+          b  <<-  aw/popsize
+          print(b)
+        }
+
+  mylist <<-  sapply(vvv, weighted_counts)
+  mylist <<-  as.data.frame(mylist)
+  mylist
+
+  # Transpose to arrange in row vector format.
+  temp <<- data.frame(t(mylist))
+
+  # Drop ref
+  temp_remove  <<- c("des1", "finalwgt", "piinv")
+  temp <<- temp %>%
+        dplyr::select(- one_of(temp_remove))
+
+  temp <<- cbind(temp, other_rowvector)
+  temp <<- temp %>%
+          relocate(n, .before = des2)
+  names(temp)
+
+  # Rename variables "respmean",
+  colnames(temp)  <<- c(paste0("respmean", 1:numcat),
+                      "finalwgt", "piinv", "ttt")
+  names(temp)
+  head(temp)
+  # View(temp)
+  # SAVE
+  respmean_row_vector <<-  temp
+  # Merge Step 1 out of 2
+  pop_respmean <<-  full_join( popmean_row_vector,
+                      respmean_row_vector) %>%
+            relocate(ttt, .after = last_col())
+
+  pop_respmean[, 1:5]
+
+  pop_respmean_fr <<- ncol(pop_respmean)-4
+  pop_respmean[, pop_respmean_fr: ncol(pop_respmean)]
+
+  View(pop_respmean)
+  cat("--- End of pop_respmean ---")
+}
+
+#H-----------------------------------
+##>> 3 fn_overall_r_indicator_3 ----
+## des_pop_respmean
+#H-----------------------------------
+
+fn_r_indicator_3_des_pop_respmean <- function() {
+
+  # des_pop_respmean corresponds to finalfile in SAS code.
+  des_pop_respmean  <<- full_join(vvv, pop_respmean) %>%
+                       mutate(seq = row_number(),
+                              responsesamp1 = 1 )
+  des_pop_respmean$ttt  <<- NULL
+
+  # column popmean27 onwards, when Viewed,
+  # numbers shown as 0.0026674> which is okay!
+  # R saves space by printing >
+  dim(des_pop_respmean) ; names(des_pop_respmean)
+  head(des_pop_respmean)
+  # glimpse(des_pop_respmean)
+
+  # seq is integer.
+  # popmean1-popmean35 shouldn't be characters.
+  popmean_col <<-  c(paste0("popmean", 1:numcat))
+  des_pop_respmean[, popmean_col] <<-
+   sapply(des_pop_respmean[, popmean_col], as.numeric)
+
+  # Inspect
+  View(des_pop_respmean[1:20,])
+  cat("--- End of des_pop_respmean ---")
+}
+
+# View(des_pop_respmean[1:20,])
+
+# des_pop_respmean  <<-  des_pop_respmean %>%
+#           mutate( responsesamp1 = 1 )
+
+#H-----------------------------------
+##>> 4 fn_overall_r_indicator_4 ----
+#H-----------------------------------
+
+fn_r_indicator_4_gh <-  function() {
+
+  #H--------------------------------------------
+  ## G. Create diff_des_mean ----
+  #H--------------------------------------------
+
+  ls()
+  # use df for programming.
+  df <<-  data.frame(des_pop_respmean)
+  dim(df) ; names(df)
+  # glimpse(df)
+
+  # Prep for loop.
+  # We have same number of columns, and rows,
+  # so just simply subtract df1 - df2.
+  des_col      <<-  c(paste0("des"     , 1:numcat))
+  respmean_col <<-  c(paste0("respmean", 1:numcat))
+  popmean_col  <<-  c(paste0("popmean" , 1:numcat))
+
+  des      <<-  df[, des_col]
+  respmean <<-  df[, respmean_col]
+  popmean  <<-  df[, popmean_col]
+
+  rsam <<-  des - respmean
+  psam <<-  des - popmean
+  temp <<-  data.frame(rsam, psam)
+
+  # Rename variables, seq is integer.
+  colnames(temp)  <<-  c(paste0("rsam", 1:numcat),
+                       paste0("psam", 1:numcat))
+  names(temp)
+  dim(temp)
+  glimpse(temp)
+  # head(temp)
+  # View(temp[1:100, ])
+
+  # Combine, save as gh
+  gh <<-  cbind(des_pop_respmean, temp)
+  gh <<-  gh %>%
+           relocate(c(responsesamp1, seq),
+          .after = last_col() )
+  glimpse(gh)
+
+  names(gh) ; dim(gh) ; class(gh)
+  # View(gh[1:100, ])
+
+  cat("--- End of Pre-matrix ---")
+}
+
+  # removeobjects <- c("des", "respmean", "popmean", "rsam", "psam")
+  # rm(list = Filter(exists, removeobjects))
+
+#H-----------------------------------
+##>> 5 fn_overall_r_indicator_5 ----
+#H-----------------------------------
+
+  #H----------------------------------------
+  ## Use gh, convert to Matrix  ----
+  ## compute R-indicators
+  #H----------------------------------------
+
+fn_R_indicators <- function() {
+  ls()
+  #  "gh"   "numcat"  "popsize" "resppop"
+  # View(gh)
+  # Check, resppop (SK=1045581, NS=1047084)
+  resppop ; popsize
+
+  # converting the data frame into matrix
+  x <<-  as.matrix(gh)
+  class(x)
+  colnames(x)
+  rownames(x[c(1:5), ])  # first 5 rows
+
+  # Prep :
+  rsam_col    <<-  c(paste0("rsam", 1:numcat))
+  psam_col    <<-  c(paste0("psam", 1:numcat))
+  des_col     <<-  c(paste0("des",  1:numcat))
+  popmean_col <<-  c(paste0("popmean", 1:numcat))
+  rx          <<-  x[, rsam_col]
+  px          <<-  x[, psam_col]
+  r           <<-  x[, des_col]
+  # in row vector
+  zp <<-  t(x[1, popmean_col])
+  nf <<-  x[, "responsesamp1"]
+
+  # weightf changed to piinv on 12/01/2022.
+  # weightf <<-  as.matrix(x[, "finalwgt"])
+  weightf   <<-  as.matrix(x[, "piinv"])
+  class(weightf) ; head(weightf)
+    head(nf)
+    from  <<-  numcat - 2
+    from
+    head(rx[1:3, 1:3]) ; head(rx[1:3, from:numcat])
+    head(px[1:3, 1:3]) ; head(px[1:3, from:numcat])
+    head(zp) ;  names(zp)
+    # View(zp) ;
+
+    #         rsam34       rsam35
+    #   -0.000894592 -0.006574091
+
+  #H--------------------------------------
+  ##>> Calculate propensity scores  ----
+  #H--------------------------------------
+  # element-wise multiplication: *
+  # mathematical(matrix) multiplication: %*%
+  # View(px)
+  # Error: non-conformable arrays
+  # xxp  <<-  t(px) * px # Error!
+  # View(xxp)
+
+  xxp  <<-   t(px) %*% px   # psam
+  xxr  <<-   t(rx) %*% rx   # rsam
+
+  # zp is row vector.
+  head(t(zp))
+  zzp  <<-   t(zp) %*% zp  # fixed
+    # head(xxp[1:6, 1:6]) # ok
+    head(xxr[1:6, 1:6])
+    head(zzp[1:6, 1:6]) # ok
+
+  yyyp  <<-  (popsize/resppop) * xxp
+  yyyr  <<-  (popsize/resppop) * xxr
+  ttp   <<-   popsize * zzp
+    head(yyyp[1:6, 1:6])
+    head(yyyr[1:6, 1:6])
+    head(ttp[1:6, 1:6])  # ok
+
+  gzpop <<-  yyyp + ttp
+  gzmix <<-  yyyr + ttp
+    head(gzpop[1:6, 1:6])
+    # head(gzmix[1:6, 1:6])
+
+  # computes the Moore-Penrose Generalized
+  # INVerse of matrix
+  library("MASS")
+  bbp   <<-  ginv(gzpop)
+  bbmix <<-  ginv(gzmix)
+    head(bbp[1:6, 1:6])
+    head(bbmix[1:6, 1:6])
+  # column vectors: weightf, nf
+  cnf    <<-  weightf * nf
+    head(cnf) ;
+    # View(cnf)
+
+  ccw    <<-  t(r) %*% cnf  # Not element-wise
+    head(ccw)
+  ddpopw <<-  bbp   %*% ccw
+  ddmix  <<-  bbmix %*% ccw
+
+  p1  <<-  "The beta coefficients, ddpopw are:"
+    head(ddpopw, n = 2)
+    # [1,] 0.7697811
+    # [2,] 0.4834853
+  p2  <<-  "ddmix are:"
+    head(ddmix, n = 2)
+    # [1,] 0.7593768
+    # [2,] 0.5054273
+    #  View(ddpopw)
+
+  roipop <<-  r %*% ddpopw
+  roimix <<-  r %*% ddmix
+
+  # column vector. To be saved later.
+  # 2 kinds of propensity scores obtained.
+  prop_pop  <<-  roipop
+  prop_mix  <<-  roimix
+
+  # If matrix errors are present, one may see below:
+  # Error: cannot allocate vector of size xxxx.x Gb
+  # Remove objects where necessary.
+  gc() ; memory.limit()
+  # saves the data into files with names:
+  # prop_pop from roipop
+  # prop_mix from roimix,
+  # Then, append
+  # View(prop_mix)
+  #H--------------------------------------
+  ## I. Compute R-indicators ----
+  #H--------------------------------------
+  ee1b <<-  weightf * roimix
+  ee1c <<-  weightf * roipop
+      head(ee1c) ; head(weightf)
+  s2term11b <<-  (1/popsize) * colSums(ee1b)
+  s2term11c <<-  (1/popsize) * colSums(ee1c)
+  s2term21  <<-  (1/popsize) * colSums(weightf)
+     s2term11b ; s2term11c ; s2term21
+
+  s2T11b    <<-  (popsize/(popsize-1)) *
+                (s2term11b-(s2term21 * s2term21))
+  s2T11c    <<-  (popsize/(popsize-1)) *
+               (s2term11c-(s2term21 * s2term21))
+  variances_ <<-  "The variances are:"
+  (variances  <<-   c(s2T11b, s2T11c))
+
+  r_ind1b <<-  1 - 2 * sqrt(s2T11b)
+  r_ind1c <<-  1 - 2 * sqrt(s2T11c)
+
+  R_indicators_ <<-  "And the R-indicators are:"
+  R_indicators  <<-  c(r_ind1b, r_ind1c)
+  R_indicators
+  # (R_indicator_mixed  <<- R_indicators[1])
+  # (R_indicator_popbased <<- R_indicators[2])
+  cat("--- End of Overall R-indicators ---")
+}
+
+#****************************************
 #H---------------------------------
 ##> Partial R-indicators ----
 #H---------------------------------
@@ -79,7 +507,7 @@ fn_r_indicator_partialtemp <-  function() {
     mean_wt_col,  mrphat_col, "seq")
   names(temp) ; head(temp)
   # View(temp)
-  # Prepare vectrorised fbar_mrphat to merge later
+  # Prepare vectorised fbar_mrphat to merge later
   des1row <<- NA
   fbar  <<- data.frame(append(des1row, unlist(a_list)))
   mrphat <<- data.frame(append(des1row, unlist(bb_list)))
@@ -205,476 +633,33 @@ fn_r_indicator_partialtemp <-  function() {
   cat("-- End of fn_r_indicator_partialtemp --")
 }
 
-#****************************************
-#H-----------------------------------
-##> Overall ----
-#H-----------------------------------
+#H-------------------------------------
+##> R-indicator_Domain_order ----
+#H-------------------------------------
 
-#H-----------------------------------
-##>> 1 fn_overall_r_indicator_1 ----
-#H-----------------------------------
+fn_r_indicator_domain_order_partial <- function() {
 
-# Ensure popmean_row_vector is loaded first.
-# dplyr:: added to avoid unused argument error
+  partialtemp  <- partialtemp %>%
+     rename(domain = domain_,
+            R_indicator_temp = R_indicator) %>%
+     mutate(
+      domain = ifelse(seq == 1, "Overall", domain))
 
-fn_overall_r_indicator_1 <-  function() {
-    aa <<-  aa %>% dplyr::select(any_of(var)) %>%
-                 mutate_at(var, factor)
+  # View(partialtemp)
 
-    # Declare macro variables
-    (resppop <<-  nrow(aa))
-    (rrate  <<-  nrow(aa)/popsize)
+  # New factor domain variable
+  order  <- c(print(partialtemp$domain))
+  order
+  partialtemp$fct_domain <- factor(partialtemp$domain,
+    levels = order)
 
-    # Check number of categories of each variable.
-    # Run before fn_nvar().
-    (levelsvar <<-  sapply(aa, levels))
+  levels(partialtemp$fct_domain)
+  partialtemp %>% tabyl(fct_domain)
 
-    # Size of categories, last cat
-    fn_nvar()
+  partial  <<- partialtemp %>%
+      relocate(fct_domain, .after = domain)
 
-    # Obtain last category (to be dropped)
-    # numcat = 35 (in SAS)..
-    fn_lastcat()
-    piinv   <<-  1.0
-    aa <<-  aa %>%
-          mutate(
-            finalwgt = 1/rrate,
-            pi = piinv,
-            piinv  = 1/pi  #1.110273
-          )
-    # View(aa[1:20, ])
-    head(aa) ; dim(aa)
-    aa %>% tabyl(finalwgt)
-
-    #H--------------------------------------
-    ## dummy variables ----
-    #H--------------------------------------
-    # names(aa)
-    library("fastDummies")
-    # Intecept
-    aa  <<-  aa %>% mutate(des1 = 1)
-
-    # Allow a minute to execute.
-    aa <<-  dummy_cols(aa, select_columns = var)
-    names(aa)
-    # Only keep dummy variables
-    dummy_from_aa <<-  aa %>%
-                    dplyr::select(-c(1:8))
-
-    # Prepare dummy varnames
-    # to use as column names of freq counts.
-    dummy_col_names  <<-  names(dummy_from_aa)
-    dummy_col_names
-
-    # Check: recycle lastcat macros.
-    # Check the first two variables & lastcat
-    # Print (customise as needed)
-     #  var[1] ; nvar[[1]] ;
-     #  lastcat[1]
-     #  var[2] ; nvar[[2]] ; lastcat[2]
-
-     # head(aa[1:10, 1:4])
-     # head(aa[1:10, 9:11])
-     # ncol_minus3  <<-  ncol(aa) - 3
-     # ncol_minus3
-     # tail(aa[1:10, ncol_minus3 : ncol(aa)])
-    # View(aa[1:10, ])
-
-    #H--------------------------------------------
-    ## D Admin summary Freq Table + dummy variables
-    #H--------------------------------------------
-    # Prepare a one-way freq table object as well.
-    # to merge later, domain_ used, seq removed
-    mylist <<-  sapply(aa[, var], oneway_freq_table_no_total)
-    fn_clean_oneway_no_total_temp()
-    temp <<-  cbind(temp, dummy_col_names)
-    temp$cat <<- NULL
-            # dplyr::select(-cat) %>%
-    freq <<-  temp %>%
-            mutate(seq = row_number(),
-            str = str_extract(dummy_col_names, "_\\d+"),
-            n_cat = str_extract(str, "\\d+"),
-            n_cat = ifelse(seq == 1, 1, n_cat))
-    freq <<-  freq %>%
-            mutate(
-            first = ifelse(n_cat == 1, 1, 0),
-            first = ifelse(seq == 1, 0, first),
-            domain_n = cumsum(first)
-            ) %>%
-            dplyr::select(-c(str, first), count = V1) %>%
-            relocate(seq, .before = count) %>%
-            group_by(domain_n) %>%
-            mutate(cum_count = max(cumsum(count))) %>%
-            ungroup() %>%
-            rename(domain_ = dummy_col_names)
-    freq$seq <<- NULL
-    # dummy_col_names
-    # View(freq)
+  cat("End of fn_r_indicator_domain_order_partial")
 }
-
-#H-----------------------------------
-##>> 2 fn_overall_r_indicator_2 ----
-#H-----------------------------------
-# Line 196, warnings ignorable.
-
-fn_overall_r_indicator_2 <-  function() {
-
-  # Save the dataset as vvv
-  vvv  <<- aa
-
-  # Keep necessary dummy variables only.
-  names(vvv) ;   dim(vvv)
-  temp_remove  <<- c("pi", var, lastcat)
-  vvv  <<- vvv %>%
-        dplyr::select(- one_of(temp_remove))
-
-  # vvv  <- vvv %>%
-  #       dplyr::select(-"pi") %>%
-  #       dplyr::select(-any_of(var)) %>%
-  #       dplyr::select(-all_of(lastcat))
-  names(vvv) ; dim(vvv)
-
-  # Define maximum numcat (eg. 37)
-  temp_remove  <<- c("finalwgt", "piinv")
-  numcat  <<- vvv %>%
-             dplyr::select(- one_of(temp_remove))%>%
-             length()
-  numcat
-  dim(vvv)
-  head(vvv)
-
-  # Rename as des variables
-  colnames(vvv)  <<- c("finalwgt", "piinv",
-                      paste0("des", 1:numcat))
-  head(vvv)
-  names(vvv)
-
-  # Cross-check
-  # View(aa[1:20,])
-  # View(vvv[1:1000,])
-
-  # Reorder
-  vvv  <<- vvv %>%
-        relocate(finalwgt, .after = last_col()) %>%
-        relocate(piinv, .after = last_col())
-
-  #H--------------------------------------------
-  ## F Distributions as row vectors ----
-  #H--------------------------------------------
-
-  # Admin data
-  ls()
-  popsize
-
-  finalwgt  <<-  1/rrate
-  table(finalwgt)
-
-  # Treat des1(Intercept) separately. 0.999045879
-  a  <<-  vvv %>% tabyl(des1) # unweighted=1047084
-  a[2]
-
-  aw  <<-  a[2] * finalwgt
-  aw
-  respmean1  <<-  aw/popsize
-  respmean1
-  table(respmean1)
-
-  # ttt generated to use as merging id.
-  ttt  <<-  0
-
-  other_rowvector <<-  cbind(respmean1, finalwgt, piinv, ttt)
-  other_rowvector # respmean1 = 0.9990459
-
-      # Next, des2-des35
-      weighted_counts <<-  function(i) {
-          b  <<-  NULL
-          a  <<-  table(i)
-          aw <<-  as.integer(a[2] * finalwgt)
-          b  <<-  aw/popsize
-          print(b)
-        }
-
-  mylist <<-  sapply(vvv, weighted_counts)
-  mylist <<-  as.data.frame(mylist)
-  mylist
-
-  # Transpose to arrange in row vector format.
-  temp <<- data.frame(t(mylist))
-
-  # Drop ref
-  temp_remove  <<- c("des1", "finalwgt", "piinv")
-  temp <<- temp %>%
-        dplyr::select(- one_of(temp_remove))
-
-  temp <<- cbind(temp, other_rowvector)
-  temp <<- temp %>%
-          relocate(n, .before = des2)
-  names(temp)
-
-  # Rename variables "respmean",
-  colnames(temp)  <<- c(paste0("respmean", 1:numcat),
-                      "finalwgt", "piinv", "ttt")
-  names(temp)
-  head(temp)
-  # View(temp)
-  # SAVE
-  respmean_row_vector <<-  temp
-  # Merge Step 1 out of 2
-  temp_  <<-  full_join( popmean_row_vector,
-                      respmean_row_vector) %>%
-            relocate(ttt, .after = last_col())
-  # des_pop_respmean corresponds to finalfile in SAS code.
-  des_pop_respmean  <<- full_join(vvv, temp_) %>%
-                       mutate(seq = row_number(),
-                              responsesamp1 = 1 )
-  des_pop_respmean$ttt  <<- NULL
-
-  # column popmean27 onwards, when Viewed,
-  # numbers shown as 0.0026674> which is okay!
-  # R saves space by printing >
-  dim(des_pop_respmean) ; names(des_pop_respmean)
-  head(des_pop_respmean)
-  # glimpse(des_pop_respmean)
-
-  # seq is integer.
-  # popmean1-popmean35 shouldn't be characters.
-  popmean_col <<-  c(paste0("popmean", 1:numcat))
-  des_pop_respmean[, popmean_col] <<-
-   sapply(des_pop_respmean[, popmean_col], as.numeric)
-}
-
-# View(des_pop_respmean[1:20,])
-
-# des_pop_respmean  <<-  des_pop_respmean %>%
-#           mutate( responsesamp1 = 1 )
-
-#H-----------------------------------
-##>> 3 fn_overall_r_indicator_3 ----
-#H-----------------------------------
-
-fn_overall_r_indicator_3 <-  function() {
-
-  #H--------------------------------------------
-  ## G. Create diff_des_mean ----
-  #H--------------------------------------------
-
-  ls()
-  # use df for programming.
-  df <<-  data.frame(des_pop_respmean)
-  dim(df) ; names(df)
-  # glimpse(df)
-
-  # Prep for loop.
-  # We have same number of columns, and rows,
-  # so just simply subtract df1 - df2.
-  des_col      <<-  c(paste0("des"     , 1:numcat))
-  respmean_col <<-  c(paste0("respmean", 1:numcat))
-  popmean_col  <<-  c(paste0("popmean" , 1:numcat))
-
-  des      <<-  df[, des_col]
-  respmean <<-  df[, respmean_col]
-  popmean  <<-  df[, popmean_col]
-
-  rsam <<-  des - respmean
-  psam <<-  des - popmean
-  temp <<-  data.frame(rsam, psam)
-
-  # Rename variables, seq is integer.
-  colnames(temp)  <<-  c(paste0("rsam", 1:numcat),
-                       paste0("psam", 1:numcat))
-  names(temp)
-  dim(temp)
-  glimpse(temp)
-  # head(temp)
-  # View(temp[1:100, ])
-
-  gh <<-  cbind(des_pop_respmean, temp)
-  gh <<-  gh %>%
-        relocate(c(responsesamp1, seq),
-          .after = last_col())
-  glimpse(gh)
-
-  names(gh) ; dim(gh) ; class(gh)
-  # View(gh[1:100, ])
-
-  # removeobjects <- c("des", "respmean", "popmean", "rsam", "psam")
-  # rm(list = Filter(exists, removeobjects))
-
-  cat("--- End of Pre-matrix ---")
-}
-
-#H-----------------------------------
-##>> 4 fn_overall_r_indicator_4 ----
-#H-----------------------------------
-
-fn_overall_r_indicator_4 <-  function() {
-
-  #H----------------------------------------
-  ## Matrix
-  ## H. Use gh, convert to Matrix  ----
-  #H----------------------------------------
-  ls()
-  #  "gh"   "numcat"  "popsize" "resppop"
-  # View(gh)
-  # Check, resppop (SK=1045581, NS=1047084)
-  resppop ; popsize
-
-  # converting the data frame into matrix
-  x <<-  as.matrix(gh)
-  class(x)
-
-  colnames(x)
-  rownames(x[c(1:5), ])  # first 5 rows
-
-  # Prep :
-  rsam_col    <<-  c(paste0("rsam", 1:numcat))
-  psam_col    <<-  c(paste0("psam", 1:numcat))
-  des_col     <<-  c(paste0("des",  1:numcat))
-  popmean_col <<-  c(paste0("popmean", 1:numcat))
-  rx          <<-  x[, rsam_col]
-  px          <<-  x[, psam_col]
-  r           <<-  x[, des_col]
-
-  # in row vector
-  zp <<-  t(x[1, popmean_col])
-  nf <<-  x[, "responsesamp1"]
-
-  # weightf changed to piinv on 12/01/2022.
-  # weightf <<-  as.matrix(x[, "finalwgt"])
-  weightf   <<-  as.matrix(x[, "piinv"])
-  class(weightf) ; head(weightf)
-    head(nf)
-
-    from  <<-  numcat - 2
-    from
-
-    head(rx[1:3, 1:3]) ; head(rx[1:3, from:numcat])
-    head(px[1:3, 1:3]) ; head(px[1:3, from:numcat])
-    head(zp) ;  names(zp)
-    # View(zp) ;
-
-    #         rsam34       rsam35
-    #   -0.000894592 -0.006574091
-
-  #H--------------------------------------
-  ##>> Calculate propensity scores  ----
-  #H--------------------------------------
-  # element-wise multiplication: *
-  # mathematical(matrix) multiplication: %*%
-  # View(px)
-
-  # Error: non-conformable arrays
-  # xxp  <<-  t(px) * px # Error!
-  # View(xxp)
-
-  xxp  <<-   t(px) %*% px   # psam
-  xxr  <<-   t(rx) %*% rx   # rsam
-
-  # zp is row vector.
-  head(t(zp))
-  zzp  <<-   t(zp) %*% zp  # fixed
-    # head(xxp[1:6, 1:6]) # ok
-    head(xxr[1:6, 1:6]) # ??
-    head(zzp[1:6, 1:6]) # ok
-
-  yyyp  <<-  (popsize/resppop) * xxp
-  yyyr  <<-  (popsize/resppop) * xxr
-  ttp   <<-   popsize * zzp  # fixed
-    head(yyyp[1:6, 1:6])
-    head(yyyr[1:6, 1:6])
-    head(ttp[1:6, 1:6])  # ok
-
-  gzpop <<-  yyyp + ttp
-  gzmix <<-  yyyr + ttp
-    head(gzpop[1:6, 1:6])
-    # head(gzmix[1:6, 1:6])
-
-  # computes the Moore-Penrose Generalized
-  # INVerse of matrix
-  library("MASS")
-  bbp   <<-  ginv(gzpop)
-  bbmix <<-  ginv(gzmix)
-    head(bbp[1:6, 1:6])
-    head(bbmix[1:6, 1:6])
-
-  # column vectors: weightf, nf
-  cnf    <<-  weightf * nf
-    head(cnf) ;
-    # View(cnf)
-
-  ccw    <<-  t(r) %*% cnf  # Not element-wise
-    head(ccw)
-  ddpopw <<-  bbp   %*% ccw
-  ddmix  <<-  bbmix %*% ccw
-
-  p1  <<-  "The beta coefficients, ddpopw are:"
-    head(ddpopw, n = 3)
-    # [1,] 0.7697811
-    # [2,] 0.4834853
-    # [3,] 0.1480614
-
-  p2  <<-  "ddmix are:"
-    head(ddmix, n = 3)
-    # [1,] 0.7593768
-    # [2,] 0.5054273
-    # [3,] 0.1547809
-    #  View(ddpopw)
-
-  roipop <<-  r %*% ddpopw
-  roimix <<-  r %*% ddmix
-
-  # column vector. To be saved later.
-  prop_pop  <<-  roipop
-  prop_mix  <<-  roimix
-
-  # If matrix errors are present, one may see below:
-  # Error: cannot allocate vector of size xxxx.x Gb
-  # Remove objects where necessary.
-  gc() ; memory.limit()
-  # saves the data into files with names:
-  # prop_pop from roipop
-  # prop_mix from roimix,
-  # Then, append
-  # View(prop_mix)
-
-  #H--------------------------------------
-  ## I. Compute R-indicators ----
-  #H--------------------------------------
-  ee1b <<-  weightf * roimix
-  ee1c <<-  weightf * roipop
-      head(ee1c) ; head(weightf)
-  s2term11b <<-  (1/popsize) * colSums(ee1b)
-  s2term11c <<-  (1/popsize) * colSums(ee1c)
-  s2term21  <<-  (1/popsize) * colSums(weightf)
-     s2term11b ; s2term11c ; s2term21
-
-  s2T11b    <<-  (popsize/(popsize-1)) *
-                (s2term11b-(s2term21 * s2term21))
-  s2T11c    <<-  (popsize/(popsize-1)) *
-               (s2term11c-(s2term21 * s2term21))
-  variances_ <<-  "The variances are:"
-  (variances  <<-   c(s2T11b, s2T11c))
-
-  r_ind1b <<-  1 - 2 * sqrt(s2T11b)
-  r_ind1c <<-  1 - 2 * sqrt(s2T11c)
-
-  R_indicators_ <<-  "And the R-indicators are:"
-  R_indicators  <<-  c(r_ind1b, r_ind1c)
-  R_indicators
-  # (R_indicator_mixed  <<- R_indicators[1])
-  # (R_indicator_popbased <<- R_indicators[2])
-  cat("--- End of Overall R-indicators ---")
-}
-
-#H-----------------------------------
-##>> 5 fn_save_propensity_scores ----
-#H-----------------------------------
-
-# fn_save_propensity_scores <-  function() {
-#   #H--------------------------------------
-#   ## J. Compute R-indicators ----
-#   #H--------------------------------------
-
-# }
 
 ### End ###

@@ -1,44 +1,148 @@
 
 # Run Custom_Path.R if necessary.
-# rm(list = ls())
-getwd()
+    # rm(list = ls())    # Remove objects
+    getwd()
 
-# Run the code file with functions.
-source("Functions/1_Functions.R")
+    # Run the code file with functions.
+    source("Functions/1_Functions.R")
 
-# Define output file folders, path
-fn_output_folder_path()
+    # Define output file folders, path
+    fn_output_folder_path()
 
-# Disable scientific notation.
-options(scipen = 999)
+    # Disable scientific notation.
+    options(scipen = 999)
 
-library("tidyverse")
-library("readxl")
-library("writexl")
-library("janitor")
-library("ggplot2")
+    library("tidyverse") # data manipulation
+    library("ggplot2")   # visualisation
+    library("janitor")   # cross-tabulation
+    library("readxl")    # read large csv file
+    library("writexl")   # export to Excel
+
+# If the Census data or a weighted sample data are available,
+# users consult Part 1 A. Use the existing sample data.
+# If these data are unavailable, see
+# Part 1 B. Generate a weighted sample data.
 
 ##H ----------------------------------------
-## > PREP PART 1. ----
+## > PREP PART 1A. ----
+## > Use the existing weighted sample data  ----
+##H ----------------------------------------
+
+##H ----------------------------------
+## >  Steps 1-3  ----
+##H ----------------------------------
+
+## Step 1: Read in the data
+# df  <- read_csv("custom_wtsample.csv")  # Please customise
+
+  ##H ----------------------------------
+  ## >  For demonstration  ----
+  load("pop_u_short_public_release_5vars.RData")
+  ls()
+  df  <- pop_u_short_public_release_5vars
+  ##H ----------------------------------
+  dim(df)       # obs = ?
+  head(df)      # first 6 obs
+  glimpse(df)   # Quick glance at the data
+  names(df)     # variable names
+  View(df[1:100, ])
+
+## Step 2: Declare variables to be tabulated
+  var <- c("geog1", "sex", "agecode1",  # Please customise
+            "eth_code5", "econg")
+
+  maxvar <- length(var)           # No need to customise
+  maxvar
+
+  # SLOW. ALLOW A MINUTE TO EXECUTE CreateTableOne.
+  # The function prints a summary distribution table, then save it as .txt file then launches the .txt file.
+
+  # txtfile <- "wtsample_summary.txt"
+  # fn_CreateTableOne_table()
+
+## Step 3: Obtain the frequency table
+  f     <- NULL
+  t     <- NULL
+  last  <- NULL
+
+fn_maxvar5_freq_table()
+
+# Please customise depending on the maxvar.
+# Users may use fn_maxvar4_freq_table()
+# Beyond 5 maxvar, please create your own functions.
+
+##H ----------------------------------
+## >  Step 4. Check  ----
+## Check whether the total adds up to 1
+##H ----------------------------------
+
+    dim(freq_table)
+    tail(freq_table)
+
+    freq_table[1:8, 1:9]
+
+    # View(freq_table)
+
+# Manual, check the total.
+sum(freq_table[1:6, "n"])
+sum(freq_table[1:6, "p"])
+
+# automatic, check the total.
+freq_table %>% group_by(by3, by1) %>%
+  summarise(sum_freq = sum(n), sum_p = sum(p))
+
+#H---------------------------------------
+## > Step 5. Rename and save ----
+#H--------------------------------------
+
+Weightedsample_freq_table <- freq_table %>%
+          dplyr::select(seq, twdigits,
+              wtsample_n = n,
+              wtsample_perc = p,
+              everything())
+View(Weightedsample_freq_table)
+
+##H ----------------------------------------
+## > Step 6. Export outputs  ----
+##H ----------------------------------------
+
+  xlsxfile <- "Weightedsample_freq_table.xlsx"
+  fn_xlsx_path_file()
+  write_xlsx(Weightedsample_freq_table, xlsx_path_file)
+  # fn_xlsx_open()
+
+##H ----------------------------------------
+## > Step 7. Save RData (use for distance metrics)
+##H ----------------------------------------
+
+save(Weightedsample_freq_table,
+  file="Output/04-RData/Weightedsample_freq_table.RData")
+
+#--------------------------------------------------
+# This is for demo version. So, it may be overwritten.
+#--------------------------------------------------
+
+#################################################
+##H ----------------------------------------
+## > PREP PART 1B. ----
 ## > Generate a weighted sample survey data
 ##> 0. Recap. Launch output files  ----
 ##H ----------------------------------------
 
 # xlsxfile <- "Weightedsample_freq_table.xlsx"
 # # fn_xlsx_open()
-
 # file <- "WeightedSample_Data_Summary.txt"
 
 #H---------------------------------------
-## > Step 1. Load Census data
+## > Step 1. Load Census/wtsample data
 #H--------------------------------------
 
-load("pop_u_short_before_sim_5vars.RData")
-
+load("pop_u_short_public_release_5vars.RData")
+ls()
 # Call the data as df from now on.
 # ls()
 
-df  <- pop_u_short_before_sim_5vars
+df  <- pop_u_short_public_release_5vars
 dim(df)   # obs = 1163659
 
 names(df)
@@ -57,8 +161,8 @@ var <- c("geog1", "sex", "agecode1",
 # SLOW. ALLOW A MINUTE TO EXECUTE CreateTableOne.
 # The function prints a summary distribution table, then save it as .txt file then launches the .txt file.
 
-txtfile <- "census_summary.txt"
-fn_CreateTableOne_table()
+# txtfile <- "census_summary.txt"
+# fn_CreateTableOne_table()
 
 #H ---------------------------------------
 ## > Step 2. Draw a random sample ----
@@ -112,55 +216,32 @@ View(freq_table)
 
 ##H ----------------------------------
 ## >  Step 4. Check  ----
+## Check whether the total adds up to 1
 ##H ----------------------------------
 
-##>>  Adjust to get population count
+    dim(freq_table)
+    tail(freq_table)
 
-# Check whether the total adds up to 1
-freq_table[1:8, 1:9]
+    freq_table[1:8, 1:9]
+
+    # View(freq_table)
+
+# Manual, check the total.
 sum(freq_table[1:6, "n"])
 sum(freq_table[1:6, "p"])
 
-# Obtain pop count(Master) by multiplying 50
-df %>% tabyl(var[5]) %>% adorn_totals()
-nrow(df) * 50
-
-  # When % is multiplied by 50, correct!
-  # % is 2265    0.097323078
-  # % is 113250  0.097323078
-  (2265*50)/(nrow(df) * 50)
-
-  # twoway sum check: geoga(a) 1-6 x agecode1 1-14
-  # twdigits from 101301 to 106314
-  tw  <- freq_table %>%
-   filter(twdigits %in% c(101301, 106314)) %>%
-   summarise(tw = seq)
-  tw
-  #   seq
-  # 1  43
-  # 2 126
-  tw[[1]][1]
-  tw[[1]][2]
-  freq_table %>%
-    filter(seq %in% c(tw[[1]][1]:tw[[1]][2])) %>%
-    summarise(tw_n = sum(n), tw_p = sum(p))
-
-  # Manual input
-  # freq_table %>% filter(seq %in% c(54:137)) %>%
-  #    summarise(tw_n = sum(n), tw_p = sum(p))
-
-    tail(freq_table)
-    dim(freq_table)
-  # View(freq_table)
+# automatic, check the total.
+freq_table %>% group_by(by3, by1) %>%
+  summarise(sum_freq = sum(n), sum_p = sum(p))
 
 #H---------------------------------------
 ## > Step 5. Rename and save ----
 #H--------------------------------------
 
 Weightedsample_freq_table <- freq_table %>%
-          dplyr::select(seq, twdigits,
-              raw_n, wtsample_n = n,
-              wtsample_perc = p, everything())
+          dplyr::select(seq, twdigits, raw_n,
+            wtsample_n    = n,
+            wtsample_perc = p, everything())
 View(Weightedsample_freq_table)
 
 ##H ----------------------------------------
@@ -174,7 +255,7 @@ View(Weightedsample_freq_table)
   xlsxfile <- "Weightedsample_freq_table.xlsx"
   fn_xlsx_path_file()
   write_xlsx(sheets, xlsx_path_file)
-  # fn_xlsx_open()
+  fn_xlsx_open()
 
 ##H ----------------------------------------
 ## > Step 7. Save RData (use for distance metrics)
@@ -183,6 +264,7 @@ View(Weightedsample_freq_table)
 save(Weightedsample_freq_table,
   file="Output/04-RData/Weightedsample_freq_table.RData")
 
+#################################################
 ##H ----------------------------------------
 ##> PREP PART 2. ----
 ##> Auxiliary file for R-indicator ----
@@ -191,28 +273,29 @@ save(Weightedsample_freq_table,
 
 ls()
 
+# Popsize: oneway total of the first variable declared.
 popsize <- freq_table %>%
-          filter(oneway == 1 & by1 == "geog1") %>%
+          filter(oneway == 1 & by1 == var[1]) %>%
           summarise(popsize = sum(n))
 popsize
 freq_table  <- data.frame(freq_table, popsize)
+
 View(freq_table)
-# 1163650  # Census obs = 1163659
+# wtsample 1163650  # Census obs = 1163659
 
 # Compute meanpop
 auxiliary  <- freq_table %>%
           filter(oneway == 1) %>%
           group_by(by1) %>%
-          mutate(
-              meanpop = n / popsize) %>%
+          mutate(meanpop = n / popsize) %>%
           ungroup()  %>%
           dplyr::select(seq, count = n, by1,
-           v, by2, meanpop, raw_n)
+           v, by2, meanpop)
 names(auxiliary)
 
 firstrow <- data.frame(seq = 0, count = popsize,
             by1 = "total", v = 0, by2 = "00",
-            meanpop = 1, raw_n = 0)
+            meanpop = 1)
 names(firstrow)  <- names(auxiliary)
 firstrow
 

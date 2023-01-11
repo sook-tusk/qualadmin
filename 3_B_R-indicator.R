@@ -1,6 +1,6 @@
 
 # Run Custom_Path.R if necessary.
-rm(list = ls())
+# rm(list = ls())
 getwd()
 
 # Run the code file with functions.
@@ -21,53 +21,68 @@ library("writexl")
 library("janitor")
 
 #H--------------------------------------------
-## > Step 1: Load auxiliary file ----
+## > Step 1:  Benchmark mean population ready ----
 #H--------------------------------------------
 # See 2_Prep_Wtsample_Freq_Table.R
 # PREP PART 2. Auxiliary file for R-indicator
-
-# We load auxiliary.
-load(file = "Output/04-RData/auxiliary.RData")
 
 # Run if the earlier code has changed.
 # source("2_Prep_Wtsample_Freq_table.R")
 
 #H--------------------------------------------
-## >  Step 1:  Prep Auxiliary file ----
+## >  Prep Auxiliary file ----
 #H--------------------------------------------
 
-# Obtain popsize from Population (Census)
-
-## Obtain popsize
-head(auxiliary)
+# Load auxiliary file
+load(file = "Output/04-RData/auxiliary.RData")
+auxiliary[1:10, ]
 # View(auxiliary)
 
+# Obtain popsize from population (Census or benchmark data)
+# To be used in programming later
 popsize <- auxiliary %>%
-           filter( meanpop == 1) %>%
+           filter( seq == 1) %>%
            summarise(count)
-(popsize <- popsize[[1]] )
+
+popsize <- popsize[[1]]
+popsize
 # wtsample 1163650
 
 # Keep necessary dummy variables only.
 nrow(auxiliary)
 
-auxiliary_temp <- auxiliary
-col_auxiliary <- auxiliary_temp %>%
+col_auxiliary <- auxiliary %>%
              group_by(by1) %>%
              mutate(
-              lastcat_ = ifelse(by2 == max(by2),
-                    1, 0),
+              lastcat_ = ifelse(by2 == max(by2), 1, 0),
               lastcat = ifelse(seq == 1, 0, lastcat_)
             ) %>%
              filter(lastcat == 0) %>%
              dplyr::select(-c(lastcat_, lastcat)) %>%
              ungroup()
-dim(col_auxiliary) ; head(col_auxiliary)
-nrow(col_auxiliary)
+dim(col_auxiliary)
+col_auxiliary[1:10, ]
 
-# Print meanpop
+# Identify the numcat & create a macro
+nrow(col_auxiliary)
+numcat <- nrow(col_auxiliary)
+numcat
+
+# Inspect dummy variables
+  dummychk <- col_auxiliary
+  dummychk %>% tabyl(by1, by2)
+
+# table(dummychk$by1, dummychk$by2)
+
+# Keep meanpop only
+keep <- c("meanpop")
+col_auxiliary <- col_auxiliary[keep]
+
+# Print meanpop before transposing the data.
+# To print all rows
 print(col_auxiliary[1:nrow(col_auxiliary), "meanpop"],
   n = nrow(col_auxiliary))
+
     #  meanpop
     #    wtsample
     #  1       1
@@ -75,62 +90,60 @@ print(col_auxiliary[1:nrow(col_auxiliary), "meanpop"],
     #  3   0.128
     #  ...
 
-# Rename col_auxiliary 
-auxiliary <- col_auxiliary
-
 #H---------------------------------------
-## > Step 2: wtsample distributions as row vectors ----
+## > Step 2: Reshape and save wtsample distributions as row vectors ----
 #H---------------------------------------
 # Recall meanpop = count / popsize
 
-# Identify the numcat
-(numcat <- nrow(auxiliary))
-
 # Transpose to arrange in row vector format.
-auxiliary <- t(auxiliary)
-auxiliary <- as.data.frame(auxiliary)
-is.data.frame(auxiliary)
+  temp <- t(col_auxiliary)
+  temp <- as.data.frame(temp)
+  row.names(temp) <- 1:nrow(temp)
 
-auxiliary$reshaped <- row.names(auxiliary)
-row.names(auxiliary) <- 1:nrow(auxiliary)
+# generate merge id, ttt.
+  temp$ttt  <- 0
 
-names(auxiliary)
+  # View(temp)
 
-# Tidy & generate merge id, ttt.
-auxiliary <- auxiliary %>%
-             filter(reshaped == "meanpop") %>%
-             mutate( ttt = 0 ) %>%
-             dplyr::select( -reshaped)
+  # Rename variables "popmean1- popmean26"
+  names(temp) <- c(paste0("popmean", 1:numcat),
+                          "ttt")
 
-# Rename variables "respmean",
-colnames(auxiliary)  <- c(paste0("popmean", 1:numcat), "ttt")
-names(auxiliary)
-str(auxiliary)
+# Check
+  popmean_temp <- temp
+  popmean_temp[, 1:5]
+  names(popmean_temp)
 
-View(auxiliary)
+# Save
+  popmean_row_vector <- temp
 
-# SAVE
-popmean_row_vector <- auxiliary
-
-ls()
+  View(popmean_row_vector)
 
 #H----------------------------------
-##> Step 3a: Declare variables ----
+##> Step 3: Declare variables in admin data ----
 #H----------------------------------
 
 # Declare variables to be used
 # Customise as needed.
 var <- c("geog1a", "sex", "agecode1",
-          "eth_code5", "econg")
-(variablenum <- length(var))
-(maxvar <- length(var))
+         "eth_code5", "econg")
+# End of custom variables.
+
+#H-----------------------------------
+##> Step 4: Define macro variables ----
+#H-----------------------------------
+
+variablenum <- length(var) # No need to customise
+maxvar <- length(var)      # No need to customise
+
+variablenum ; maxvar
 
 # simsize
 # (resppop_ <- fn_sim_obs())
 #   resppop_[1] ; resppop_[20] ;
 
 #H-----------------------------------
-##> Step 3b: Compute R-indicators ----
+##> Step 5: Compute R-indicators ----
 #H-----------------------------------
 
 aa  <- read_csv("public_release_admin.csv")
@@ -143,13 +156,28 @@ ls()
     between <- NULL
     partial <- NULL
     partialtemp <-  NULL
-   fn_overall_r_indicator_1()
-   fn_overall_r_indicator_2()
-   fn_overall_r_indicator_3()
-   fn_overall_r_indicator_4()
-   R_indicators # e.g. 0.6705086 0.6759111
+   fn_r_indicator_1_vvv()
+     from <- ncol(vvv)-4
+     vvv[1:10, from: ncol(vvv)]
 
-    # Mixed
+   fn_r_indicator_2_pop_respmean()
+     from <- ncol(pop_respmean)-4
+     pop_respmean[, from: ncol(pop_respmean)]
+
+   fn_r_indicator_3_des_pop_respmean()
+     names(des_pop_respmean)
+     from <- ncol(des_pop_respmean)-4
+     des_pop_respmean[1:6, from: ncol(des_pop_respmean)]
+
+   fn_r_indicator_4_gh()
+     # names(gh)
+     glimpse(gh)
+     dim(gh)
+
+   fn_R_indicators()
+   R_indicators # e.g. 0.496 0.515
+
+# Partial R-indicators
     prop <- prop_mix
     (R_indicator <- R_indicators[1]) # mixed
     fn_r_indicator_partialtemp()
@@ -158,7 +186,7 @@ ls()
     # View(partial)
 
 #H-------------------------------------
-## > Step 4: Tidy, Visualisation prep ----
+## > Step 5b: Tidy, Visualisation prep ----
 #H-------------------------------------
 
 levels(partial$fct_domain)
@@ -174,7 +202,7 @@ partial <- partial %>%
     .after = fct_domain)
 
 #H-----------------------------------
-## > Step 4: Open in Excel
+## > Step 6: Open in Excel
 #H-----------------------------------
 
 xlsxfile <- "R_indicator.xlsx"
@@ -183,14 +211,14 @@ xlsxfile <- "R_indicator.xlsx"
   fn_xlsx_open()
 
 # H-----------------------------------
-## > Step 4: Inspect
+## > Step 6b: Inspect
 # H-----------------------------------
 
 View(partial)
-partial[1:17, c(1:2, 4, 8:10)] 
+partial[1:17, c(1:2, 4, 8:10)]
 
 #H-----------------------------------
-## > Step 5: Scatterplot
+## > Step 7: Scatterplot
 #H-----------------------------------
 
 View(partial)
