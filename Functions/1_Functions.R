@@ -139,90 +139,6 @@ fn_lastcat <- function() {
  lastcat <<- as.vector(a)
 }
 
-#H------------------------------------
-##> Sum, mean of finalwgt (ns)
-##     propensity scores (roimix) ----
-#H------------------------------------
-
-# New
-fn_stats_finalwgt_prop_score_none <- function() {
-
-  a_list  <<- list()
-  aa_list <<- list()
-  b_list  <<- list()
-  bb_list <<- list()
-
-  for (i in 1:variablenum) {
-    # Sum and mean of ns by var[i]
-    # var[i] is the grouping var.
-    # for freq table, sapply won't work. # without freq table
-    # c <- lapply(df[, var[i]], table)
-    element <- tapply(df$ns, df[, var[i]], sum)
-    a_list[[length(a_list) + 1]] <<- element
-
-    element_ <- tapply(df$roi, df[, var[i]], sum)
-    aa_list[[length(aa_list) + 1]] <<- element_
-
-    element <- tapply(df$ns, df[, var[i]], mean)
-    b_list[[length(b_list) + 1]] <<- element
-
-    element_ <- tapply(df$roi, df[, var[i]], mean)
-    bb_list[[length(bb_list) + 1]] <<- element_
-  }
-}
-
-fn_R_indicator_cat_level_temp <- function() {
-  p2Zk_list  <<- list()
-  p1Zk_list  <<- list()
-  cvp2k_list <<- list()
-  for (i in 1:variablenum) {
-   p2Zk <<- sqrt((fbar[i]/popsize))*(mrphat[i]-mrphatall)
-   p2Zk_list[[length(p2Zk_list)+1]] <<- p2Zk
-
-   element <<- p2Zk^2
-   p1Zk_list[[length(p1Zk_list)+1]] <<- element
-
-   element_ <<- (abs(p2Zk))/mrphatall
-   cvp2k_list[[length(cvp2k_list)+1]] <<- element_
-  }
-  temp   <<- data.frame(p2Zk_list)
-  temp_  <<- data.frame(p1Zk_list)
-  temp_2 <<- data.frame(cvp2k_list)
-  temp <<- data.frame(temp, temp_, temp_2)
-}
-
-#H------------------------------------
-##> Partial R-indicators
-##  Calculations column order  ----
-#H------------------------------------
-
-fn_give_order_calc_temp <- function() {
-  for (i in 1:variablenum) {
-  col <- c(var[i],
-  paste0("fbar",   i),
-  paste0("mrphat", i),
-  paste0("p2Zk",   i),
-  paste0("p1Zk",   i),
-  paste0("cvp2k",  i)
-  )
-  p  <<- rbind(col)
-  print(p)
-  p  <<- cbind(p)
-  print(p)
-  }
-}
-
-fn_col_order_calc <- function() {
-  # temp[[1]]       # All lists
-  temp <<- as.data.frame(temp)
-  row.names(temp) <<- 1:nrow(temp)
-  library("tidyverse")
-  names(temp) <<- temp %>%
-   slice(1) %>% unlist()
-  names(temp)
-  col_order_calc <<- temp
-}
-
 #H--------------------------------------------
 ##> postloop_treat_rownames_temp ----
 #H--------------------------------------------
@@ -1017,6 +933,35 @@ fn_maxvar4_freq_table  <- function() {
       dplyr::select(seq, twdigits, everything()) %>%
       relocate(by5, .after = by4) %>%
       relocate(oneway, .before = v)
+}
+
+##H ------------------------------
+##> fn_meanpop_auxiliary ----
+##H ------------------------------
+
+fn_meanpop_auxiliary <- function() {
+
+  auxiliary  <- freq_table %>%
+            filter(oneway == 1) %>%
+            group_by(by1) %>%
+            mutate(meanpop = wtsample_n/popsize) %>%
+            ungroup()  %>%
+            dplyr::select(seq,
+              count = wtsample_n, by1,
+              v, by2, meanpop)
+  names(auxiliary)
+
+  firstrow <- data.frame(seq = 0, count = popsize,
+              by1 = "total", v = 0, by2 = "00",
+              meanpop = 1)
+  names(firstrow)  <- names(auxiliary)
+  firstrow
+
+  auxiliary <- bind_rows(firstrow, auxiliary)
+
+  auxiliary <<- auxiliary %>%
+                mutate(seq = row_number(),
+                type = "wtsample")
 }
 
 ##H ------------------------------

@@ -50,6 +50,7 @@
 ## Step 2: Declare variables to be tabulated
   var <- c("geog1", "sex", "agecode1",  # Please customise
             "eth_code5", "econg")
+  var
 
   maxvar <- length(var)           # No need to customise
   maxvar
@@ -121,7 +122,6 @@ save(Weightedsample_freq_table,
 #--------------------------------------------------
 # This is for demo version. So, it may be overwritten.
 #--------------------------------------------------
-
 #################################################
 ##H ----------------------------------------
 ## > PREP PART 1B. ----
@@ -239,7 +239,7 @@ freq_table %>% group_by(by3, by1) %>%
 #H--------------------------------------
 
 Weightedsample_freq_table <- freq_table %>%
-          dplyr::select(seq, twdigits, raw_n,
+          dplyr::select(seq, twdigits,
             wtsample_n    = n,
             wtsample_perc = p, everything())
 View(Weightedsample_freq_table)
@@ -258,72 +258,12 @@ View(Weightedsample_freq_table)
   fn_xlsx_open()
 
 ##H ----------------------------------------
-## > Step 7. Save RData (use for distance metrics)
+## > Step 7. Save RData
 ##H ----------------------------------------
 
 save(Weightedsample_freq_table,
   file="Output/04-RData/Weightedsample_freq_table.RData")
 
-#################################################
-##H ----------------------------------------
-##> PREP PART 2. ----
-##> Auxiliary file for R-indicator ----
-##  Use Weightedsample_freq_table
-##H ----------------------------------------
-
-ls()
-
-# Popsize: oneway total of the first variable declared.
-popsize <- freq_table %>%
-          filter(oneway == 1 & by1 == var[1]) %>%
-          summarise(popsize = sum(n))
-popsize
-freq_table  <- data.frame(freq_table, popsize)
-
-View(freq_table)
-# wtsample 1163650  # Census obs = 1163659
-
-# Compute meanpop
-auxiliary  <- freq_table %>%
-          filter(oneway == 1) %>%
-          group_by(by1) %>%
-          mutate(meanpop = n / popsize) %>%
-          ungroup()  %>%
-          dplyr::select(seq, count = n, by1,
-           v, by2, meanpop)
-names(auxiliary)
-
-firstrow <- data.frame(seq = 0, count = popsize,
-            by1 = "total", v = 0, by2 = "00",
-            meanpop = 1)
-names(firstrow)  <- names(auxiliary)
-firstrow
-
-auxiliary <- bind_rows(firstrow, auxiliary)
-
-auxiliary <- auxiliary %>%
-              mutate(seq = row_number(),
-              type = "wtsample")
-
-head(auxiliary)
-names(auxiliary)
-str(auxiliary)
-
-# View(auxiliary)
-# View(freq_table)
-
-wtsample_auxiliary_econg <- auxiliary
-
-# Output
-print(wtsample_auxiliary_econg)
-
-# Save RData
-save(auxiliary, file = "Output/04-RData/auxiliary.RData")
-
-write_xlsx(auxiliary,
-  "Output/03-ExcelOutput/wtsample_auxiliary_econg.xlsx")
-
-# Launches the Excel file
-# shell.exec("Output\\03-ExcelOutput\\wtsample_auxiliary_econg.xlsx")
+save(var, file="Output/04-RData/var.RData")
 
 ### End ###

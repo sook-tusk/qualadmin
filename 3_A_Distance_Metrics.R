@@ -41,7 +41,7 @@ head(df)
 glimpse(df)
 names(df)
 
-View(df[1:1000, ])
+View(df[1:100, ])
 
 #H------------------------------------------
 ##>  Initial look on admin freq tables ----
@@ -49,7 +49,7 @@ View(df[1:1000, ])
 
 # Declare variables to be used.
 # Please customise as needed.
-  var <- c("geog1a", "sex", "agecode1",
+  var <- c("geog1", "sex", "agecode1",
             "eth_code5", "econg")
 
 # Check, first and second variables
