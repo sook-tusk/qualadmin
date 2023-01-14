@@ -9,7 +9,7 @@ to the uncertainly surrounding the quality of the administrative
 data. This manual guides you through implementing R code files to
 obtain quality measures of the target administrative data. The
 quality measures consist of two elements: distance metrics and
-R-indicators. Please consult here [add link] for more details on the
+R-indicators. Please consult the user manual for more details on the
 distance metrics and R-indicators.
 
 This space is strictly reserved to walk through obtaining distance
