@@ -29,14 +29,17 @@
 ##H ----------------------------------------
 
 ##H ----------------------------------
-## >  Steps 1-3  ----
+## >  Steps 1-3  
 ##H ----------------------------------
 
-## Step 1: Read in the data
+##H ----------------------------------
+## > Step 1: Read in the data ----
+##H ----------------------------------
+
 # df  <- read_csv("custom_wtsample.csv")  # Please customise
 
   ##H ----------------------------------
-  ## >  For demonstration  ----
+  ## >  For demonstration  
   load("pop_u_short_public_release_5vars.RData")
   ls()
   df  <- pop_u_short_public_release_5vars
@@ -47,7 +50,10 @@
   names(df)     # variable names
   View(df[1:100, ])
 
-## Step 2: Declare variables to be tabulated
+##H ----------------------------------
+## > Step 2: Declare variables to be tabulated ----
+##H ----------------------------------
+
   var <- c("geog1", "sex", "agecode1",  # Please customise
             "eth_code5", "econg")
   var
@@ -61,7 +67,10 @@
   # txtfile <- "wtsample_summary.txt"
   # fn_CreateTableOne_table()
 
-## Step 3: Obtain the frequency table
+##H ----------------------------------
+## >  Step 3: Obtain the frequency table ----
+##H ----------------------------------
+  
   f     <- NULL
   t     <- NULL
   last  <- NULL
@@ -119,14 +128,14 @@ View(Weightedsample_freq_table)
 save(Weightedsample_freq_table,
   file="Output/04-RData/Weightedsample_freq_table.RData")
 
-#--------------------------------------------------
-# This is for demo version. So, it may be overwritten.
-#--------------------------------------------------
-#################################################
+#H--------------------------------------------------
+#H This is for demo version. So, it may be overwritten.
+#H--------------------------------------------------
+#H################################################
 ##H ----------------------------------------
 ## > PREP PART 1B. ----
-## > Generate a weighted sample survey data
-##> 0. Recap. Launch output files  ----
+## > Generate a weighted sample survey data ----
+##> 0. Recap. Launch output files  
 ##H ----------------------------------------
 
 # xlsxfile <- "Weightedsample_freq_table.xlsx"
@@ -134,7 +143,7 @@ save(Weightedsample_freq_table,
 # file <- "WeightedSample_Data_Summary.txt"
 
 #H---------------------------------------
-## > Step 1. Load Census/wtsample data
+## > Step 1. Load Census microdata ----
 #H--------------------------------------
 
 load("pop_u_short_public_release_5vars.RData")
@@ -258,7 +267,7 @@ View(Weightedsample_freq_table)
   fn_xlsx_open()
 
 ##H ----------------------------------------
-## > Step 7. Save RData
+## > Step 7. Save RData ----
 ##H ----------------------------------------
 
 save(Weightedsample_freq_table,

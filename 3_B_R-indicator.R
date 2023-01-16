@@ -21,16 +21,16 @@ library("writexl")
 library("janitor")
 
 #H--------------------------------------------
-## > Step 1:  Benchmark mean population ready ----
+## > Step 1: : Prepare an Auxiliary data file ----
 #H--------------------------------------------
-##> Auxiliary file for R-indicator ----
+## Auxiliary file for R-indicator 
 ##  Use Weightedsample_freq_table
 
 # Run if the earlier code has changed.
 # source("2_Prep_Wtsample_Freq_table.R")
 
 #H--------------------------------------------
-## >  Prep Auxiliary file ----
+##>> Prep Auxiliary file 
 #H--------------------------------------------
 
 load(file = "Output/04-RData/Weightedsample_freq_table.RData")
@@ -66,12 +66,12 @@ print(auxiliary)
 # View(auxiliary)
 
 # (Optional) Save intermediate RData
-  # save(auxiliary, file = "Output/04-RData/auxiliary.RData")
+  save(auxiliary, file = "Output/04-RData/auxiliary.RData")
 
-  # write_xlsx(auxiliary,
-  #   "Output/03-ExcelOutput/auxiliary.xlsx")
+  write_xlsx(auxiliary,
+    "Output/03-ExcelOutput/auxiliary.xlsx")
 
-  # Launches the Excel file
+  # Launches the Excel file (Windows PC)
   # shell.exec("Output\\03-ExcelOutput\\auxiliary.xlsx")
 
 # prepare the data to build design matrix
@@ -81,7 +81,7 @@ print(auxiliary)
 nrow(auxiliary)
 
 #H---------------------------------------
-## >> calculate meanpop ----
+## >> Calculate meanpop 
 #H---------------------------------------
 
 col_auxiliary <- auxiliary %>%
@@ -121,8 +121,8 @@ print(col_auxiliary)
     #  ...
 
 #H---------------------------------------
-## > Step 2: Reshape and save wtsample distributions
-## as row vectors ----
+## > Step 2: Reshape and save wtsample distributions ----
+## as row vectors 
 #H---------------------------------------
 
 # Transpose to arrange in the row vector format.
@@ -218,7 +218,7 @@ ls()
     fn_r_indicator_domain_order_partial()
 
 # H-----------------------------------
-## > Step 6a: Inspect
+## > Step 6a: Inspect ----
 # H-----------------------------------
 
 View(partial)
@@ -250,7 +250,7 @@ partial <- partial %>%
     .after = fct_domain)
 
 #H-----------------------------------
-## > Step 7: Scatterplot
+## > Step 7b: Scatterplot ----
 #H-----------------------------------
 
 View(partial)

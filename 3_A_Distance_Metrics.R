@@ -31,7 +31,7 @@ xlsxfile <- "Weightedsample_freq_table.xlsx"
 ## Now admin data
 
 #H------------------------------
-## > Step 1: read admin data
+## > Step 1: read admin data ----
 #H------------------------------
 
 df  <- read_csv("public_release_admin.csv")
@@ -44,7 +44,7 @@ names(df)
 View(df[1:100, ])
 
 #H------------------------------------------
-##>  Initial look on admin freq tables ----
+##>>  Initial look on admin freq tables 
 #H------------------------------------------
 
 # Declare variables to be used.
@@ -92,8 +92,7 @@ View(df[1:100, ])
   names(Admin_f_table_one)
 
 #H----------------------------------------------
-## >  Step 3: Merge admin + Wtsample
-##  freq table
+## >  Step 3: Merge admin + Wtsample  freq table ----
 #H----------------------------------------------
 
 fn_merge_one_admin_wtsample_f_table_temp()
@@ -102,11 +101,11 @@ names(temp)
 View(temp)
 
 #H----------------------------------------------
-##> Ready to move onto distance metrics ----
+## > Ready to move onto distance metrics 
 #H----------------------------------------------
 
 #H----------------------------------------------
-### >> Step 4: Create Quality indicators DOMAIN ----
+## > Step 4: Create Quality indicators DOMAIN ----
 #H----------------------------------------------
 
   fn_create_domain_temp()
@@ -118,9 +117,9 @@ View(temp)
   # for user manual, display_domain
   display_domain %>% tabyl(fct_domain)
 
-##H ----------------------------------------
-## >  Step 5: Compute distance_metrics
-##H ----------------------------------------
+#H ----------------------------------------
+#> Step 5: Compute distance_metrics ----
+#H ----------------------------------------
 
 fn_unstd_distance_metrics_full()
 # View(unstd_distance_metrics_full)
@@ -128,9 +127,9 @@ fn_unstd_distance_metrics_full()
 fn_unstd_distance_metrics_tidy()
 View(unstd_distance_metrics_tidy)
 
-##H ----------------------------------------
-## > Step 6: Standardise distance metrics ---
-##H ----------------------------------------
+#H ----------------------------------------
+# > Step 6: Standardise distance metrics ----
+#H ----------------------------------------
 
   temp <- unstd_distance_metrics_tidy %>%
     mutate(
@@ -145,13 +144,13 @@ View(unstd_distance_metrics_tidy)
 ##>> CHECK: (OPTIONAL) launch distance_metrics_wide
 ##H ----------------------------------------
 
- xlsxfile <- "distance_metrics_one_wide.xlsx"
+ xlsxfile <- "distance_metrics_wide.xlsx"
   fn_xlsx_path_file()
-  # write_xlsx(std_distance_metrics_wide, xlsx_path_file)
-  # fn_xlsx_open()
+  write_xlsx(std_distance_metrics_wide, xlsx_path_file)
+  fn_xlsx_open()
 
 #H-------------------------------------
-## > Step 7a: Reshape for plotting
+## > Step 7: Reshape for plotting ----
 #H-------------------------------------
 
   fn_distance_metrics_long()
@@ -203,9 +202,9 @@ View(unstd_distance_metrics_tidy)
 
   theme_set(theme_bw())
 
-##H ----------------------------------------
-## >  Step 8b: Scatterplot, all 3
-##H ----------------------------------------
+#H ----------------------------------------
+# >  Step 8b: Scatterplot, all 3 ----
+#H ----------------------------------------
 
 # names(df) ; str(df) ;
  # alpha = 0.7,
@@ -229,9 +228,9 @@ plot(p)
   fn_fig_path_file()
   ggsave(fig_path_file)
 
-##H ----------------------------------------
-## > Step 8: Scatterplot, NOT-flipped
-##H ----------------------------------------
+#H ----------------------------------------
+# > Step 8: Scatterplot, NOT-flipped
+#H ----------------------------------------
 # View(df)
 
 pz <- df %>%
