@@ -1,9 +1,9 @@
 ## README
 
-Repository for "Quality Indicators for Administrative Data1
+Repository for "Quality Indicators for Administrative Data
 User Manual For R Package on GitHub - User Manual".
 
-Funded by the Grant: ‘Methodological Advancements on the Use of Administrative Data in Official Statistics’ ESRC (ES/V005456/1).
+The project is funded by the Grant: ‘Methodological Advancements on the Use of Administrative Data in Official Statistics’ ESRC (ES/V005456/1).
 
 ## A Brief Introduction
 
