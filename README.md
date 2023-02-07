@@ -1,11 +1,14 @@
 ## README
 
-Repository for "Methodological advancements on the use of administrative data in Official Statistics - User Manual".
+Repository for "Quality Indicators for Administrative Data1
+User Manual For R Package on GitHub - User Manual".
+
+Funded by the Grant: ‘Methodological Advancements on the Use of Administrative Data in Official Statistics’ ESRC (ES/V005456/1).
 
 ## A Brief Introduction
 
 Using administrative data in Official Statistics needs caution due
-to the uncertainly surrounding the quality of the administrative
+to the uncertainty surrounding the quality of the administrative
 data. This manual guides you through implementing R code files to
 obtain quality measures of the target administrative data. The
 quality measures consist of two elements: distance metrics and
