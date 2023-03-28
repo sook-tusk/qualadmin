@@ -16,8 +16,6 @@ getwd()
 
 source("Functions/1_Functions.R")
 
-source("Functions/2_Functions_R-indicators.R")
-
 #H------------------------------
 ##> 2. Quality Measures
 #H------------------------------

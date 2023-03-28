@@ -3,7 +3,7 @@
 setwd("F:/admindata")
 
 # Master project folder (USE AS IT IS)
-setwd("./Public_Release")
+setwd("./qualadmin-main")
 
 # Check
 getwd()

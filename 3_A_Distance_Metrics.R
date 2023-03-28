@@ -11,11 +11,13 @@ source("Functions/1_Functions.R")
 
 fn_output_folder_path()
 
-library("tidyverse")
-library("readxl")
-library("writexl")
-library("janitor") # tabulations
-library("ggplot2")
+    library("dplyr")     # data manipulation
+    library("ggplot2")   # visualisation
+    library("readr")     # read large csv file
+    library("tidyr")     # data manipulation
+    library("readxl")    # read Excel file
+    library("writexl")   # export to Excel
+    library("janitor")   # cross-tabulation
 
 # H------------------------------------------
 ##  Preliminary step
@@ -34,6 +36,7 @@ xlsxfile <- "Weightedsample_freq_table.xlsx"
 ## > Step 1: read admin data ----
 #H------------------------------
 
+# changed from read_csv
 df  <- read_csv("public_release_admin.csv")
 nrow(df)
 head(df)
@@ -41,10 +44,10 @@ head(df)
 glimpse(df)
 names(df)
 
-View(df[1:100, ])
+# View(df[1:100, ])
 
 #H------------------------------------------
-##>>  Initial look on admin freq tables 
+##>>  Initial look on admin freq tables
 #H------------------------------------------
 
 # Declare variables to be used.
@@ -98,10 +101,10 @@ View(df[1:100, ])
 fn_merge_one_admin_wtsample_f_table_temp()
 print(temp[1:20, 1:9])
 names(temp)
-View(temp)
+# View(temp)
 
 #H----------------------------------------------
-## > Ready to move onto distance metrics 
+## > Ready to move onto distance metrics
 #H----------------------------------------------
 
 #H----------------------------------------------
@@ -110,7 +113,7 @@ View(temp)
 
   fn_create_domain_temp()
 
-  View(temp)
+  # View(temp)
 
   display_domain <- temp
 
@@ -125,7 +128,7 @@ fn_unstd_distance_metrics_full()
 # View(unstd_distance_metrics_full)
 
 fn_unstd_distance_metrics_tidy()
-View(unstd_distance_metrics_tidy)
+# View(unstd_distance_metrics_tidy)
 
 #H ----------------------------------------
 # > Step 6: Standardise distance metrics ----
@@ -156,7 +159,7 @@ View(unstd_distance_metrics_tidy)
   fn_distance_metrics_long()
 
   head(distance_metrics_long)
-  View(distance_metrics_long)
+  # View(distance_metrics_long)
 
   df <- distance_metrics_long
   # std_test(1-Duncan, 1-HD, 1-KL) only
@@ -206,8 +209,6 @@ View(unstd_distance_metrics_tidy)
 # >  Step 8b: Scatterplot, all 3 ----
 #H ----------------------------------------
 
-# names(df) ; str(df) ;
- # alpha = 0.7,
 p <- df %>%
     ggplot (aes(x = fct_domain, y = index
       )) +

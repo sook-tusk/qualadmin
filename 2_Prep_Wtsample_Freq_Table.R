@@ -12,11 +12,11 @@
     # Disable scientific notation.
     options(scipen = 999)
 
-    library("tidyverse") # data manipulation
+    library("dplyr") # data manipulation
     library("ggplot2")   # visualisation
-    library("janitor")   # cross-tabulation
     library("readxl")    # read large csv file
     library("writexl")   # export to Excel
+    library("janitor")   # cross-tabulation
 
 # If the Census data or a weighted sample data are available,
 # users consult Part 1 A. Use the existing sample data.
@@ -29,7 +29,7 @@
 ##H ----------------------------------------
 
 ##H ----------------------------------
-## >  Steps 1-3  
+## >  Steps 1-3
 ##H ----------------------------------
 
 ##H ----------------------------------
@@ -39,7 +39,7 @@
 # df  <- read_csv("custom_wtsample.csv")  # Please customise
 
   ##H ----------------------------------
-  ## >  For demonstration  
+  ## >  For demonstration
   load("pop_u_short_public_release_5vars.RData")
   ls()
   df  <- pop_u_short_public_release_5vars
@@ -48,7 +48,7 @@
   head(df)      # first 6 obs
   glimpse(df)   # Quick glance at the data
   names(df)     # variable names
-  View(df[1:100, ])
+  # View(df[1:100, ])
 
 ##H ----------------------------------
 ## > Step 2: Declare variables to be tabulated ----
@@ -62,6 +62,8 @@
   maxvar
 
   # SLOW. ALLOW A MINUTE TO EXECUTE CreateTableOne.
+  # One needs to install "tableone" package.
+  # Ignore this if installation is unsuccessful.
   # The function prints a summary distribution table, then save it as .txt file then launches the .txt file.
 
   # txtfile <- "wtsample_summary.txt"
@@ -70,7 +72,7 @@
 ##H ----------------------------------
 ## >  Step 3: Obtain the frequency table ----
 ##H ----------------------------------
-  
+
   f     <- NULL
   t     <- NULL
   last  <- NULL
@@ -110,7 +112,7 @@ Weightedsample_freq_table <- freq_table %>%
               wtsample_n = n,
               wtsample_perc = p,
               everything())
-View(Weightedsample_freq_table)
+# View(Weightedsample_freq_table)
 
 ##H ----------------------------------------
 ## > Step 6. Export outputs  ----
@@ -135,7 +137,7 @@ save(Weightedsample_freq_table,
 ##H ----------------------------------------
 ## > PREP PART 1B. ----
 ## > Generate a weighted sample survey data ----
-##> 0. Recap. Launch output files  
+##> 0. Recap. Launch output files
 ##H ----------------------------------------
 
 # xlsxfile <- "Weightedsample_freq_table.xlsx"
@@ -221,7 +223,7 @@ freq_table  <- freq_table %>%
           dplyr::select(seq, twdigits,
             raw_n, n, p, everything() )
 
-View(freq_table)
+# View(freq_table)
 
 ##H ----------------------------------
 ## >  Step 4. Check  ----
@@ -251,7 +253,7 @@ Weightedsample_freq_table <- freq_table %>%
           dplyr::select(seq, twdigits,
             wtsample_n    = n,
             wtsample_perc = p, everything())
-View(Weightedsample_freq_table)
+# View(Weightedsample_freq_table)
 
 ##H ----------------------------------------
 ## > Step 6. Export outputs  ----
