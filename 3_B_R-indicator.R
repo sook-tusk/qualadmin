@@ -31,6 +31,8 @@ options(scipen = 999)
 #H--------------------------------------------
 
 load(file = "Output/04-RData/Weightedsample_freq_table.RData")
+# View(Weightedsample_freq_table)
+
 load(file="Output/04-RData/var.RData")
 
 head(Weightedsample_freq_table)
@@ -127,17 +129,17 @@ print(col_auxiliary)
   names(temp) <- c(paste0("popmean", 1:numcat),
                           "ttt")
 
-# Check
-  popmean_temp <- temp
-  popmean_temp[, 1:5]
-  names(popmean_temp)
-
 # Save
   popmean_row_vector <- temp
+
+# Check
   # View(popmean_row_vector)
 
-#H----------------------------------
-##> Step 3: Declare variables in admin data ----
+  names(popmean_row_vector)
+  popmean_row_vector[, 1:5]
+
+#H-------------------------------
+##> Step 3: Declare var in admin data ----
 ## Skip as appropriate
 #H----------------------------------
 
@@ -152,8 +154,8 @@ print(col_auxiliary)
 
 # User admin data file
 aa  <- read_csv("public_release_admin.csv")
-head(aa)
 nrow(aa) # 1033664
+head(aa)
 
 # Prep
       df      <- NULL
@@ -174,8 +176,9 @@ nrow(aa) # 1033664
    dim(gh)
 
 # Free up RAM space
-keepobjects <- c("var", "gh", "popsize", "resppop",
-          "numcat", "fn_prep_aa", "fn_R_indicators")
+keepobjects <- c("var", "gh", "popsize",
+  "resppop", "numcat", "fn_prep_aa",
+  "fn_R_indicators")
 rm(list = ls()[!ls() %in% keepobjects])
 ls()
 
@@ -183,7 +186,7 @@ ls()
   fn_R_indicators()
   R_indicators
 
-   prop_mix_based_R_indicator
+  prop_mix_based_R_indicator
 
 #H-----------------------------------
 ##> Step 5b: TIDY, Free up RAM space ----
@@ -202,7 +205,7 @@ source("Functions/1_Functions.R")
 fn_output_folder_path()
 
 #H-----------------------------------
-##> Step 5: Compute Overall R-indicators ----
+##> Step 5: Compute Partial R-indicators ----
 #H-----------------------------------
 
 # User admin data file
@@ -232,7 +235,7 @@ xlsxfile <- "R_indicator.xlsx"
 #H-----------------------------------
 
 # View(partial)
-# partial[1:17, c(1:2, 4, 8:10)]
+partial[1:17, c(1:3, 5, 8:10)]
 
 #H-------------------------------------
 ## > Step 7a: Tidy, Visualisation prep ----
@@ -258,15 +261,20 @@ partial <- partial %>%
 
 theme_set(theme_bw())
 
-# Overall R-indicator only
-# Variable level
-
 # More theme options:
   # panel.grid.major = element_blank(),
   # panel.grid.minor = element_blank(),
 
+# Overall R-indicator only
+# Variable level
+
+# Inspect level, level = 1 is var-level.
+# level = 3 is cat-level.
+
+# partial[1:17, c(1:3, 5, 8:10)]
+
 p1 <- partial %>%
-    filter(seq %in% (4:8)) %>%
+    filter(level == 1) %>%
     ggplot(aes(x = fct_domain, y = R_indicator)) +
     geom_point(stroke = 1.2, colour = "darkblue") +
     labs( x = "Domain",
@@ -283,9 +291,9 @@ plot(p1)
   fn_fig_path_file()
   ggsave(fig_path_file)
 
-# cat-level
+# cat-level (level = 3 is cat-level)
 p2 <- partial %>%
-    filter(seq %in% (10:50)) %>%
+    filter(level == 3) %>%
     ggplot (aes(x = fct_domain, y = R_indicator )) +
     geom_point(stroke = 1.2, colour = "darkblue") +
     labs( x = "",

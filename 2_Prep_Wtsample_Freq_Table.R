@@ -12,16 +12,17 @@
     # Disable scientific notation.
     options(scipen = 999)
 
-    library("dplyr") # data manipulation
+    library("dplyr")     # data manipulation
     library("ggplot2")   # visualisation
-    library("readxl")    # read large csv file
+    library("readr")     # read large csv file
+    library("readxl")    # read Excel file
     library("writexl")   # export to Excel
     library("janitor")   # cross-tabulation
 
-# If the Census data or a weighted sample data are available,
-# users consult Part 1 A. Use the existing sample data.
+# If the Census data or a weighted sample data
+# are available, users consult Part 1A.
 # If these data are unavailable, see
-# Part 1 B. Generate a weighted sample data.
+# Part 1B, Generate a weighted sample data.
 
 ##H ----------------------------------------
 ## > PREP PART 1A. ----
@@ -36,7 +37,8 @@
 ## > Step 1: Read in the data ----
 ##H ----------------------------------
 
-# df  <- read_csv("custom_wtsample.csv")  # Please customise
+# Please customise
+# df  <- read_csv("custom_wtsample.csv")
 
   ##H ----------------------------------
   ## >  For demonstration
@@ -44,7 +46,7 @@
   ls()
   df  <- pop_u_short_public_release_5vars
   ##H ----------------------------------
-  dim(df)       # obs = ?
+  dim(df)       # obs = 1163659 (example)
   head(df)      # first 6 obs
   glimpse(df)   # Quick glance at the data
   names(df)     # variable names
@@ -53,20 +55,23 @@
 ##H ----------------------------------
 ## > Step 2: Declare variables to be tabulated ----
 ##H ----------------------------------
-
-  var <- c("geog1", "sex", "agecode1",  # Please customise
+  # Please customise
+  var <- c("geog1", "sex", "agecode1",
             "eth_code5", "econg")
   var
 
-  maxvar <- length(var)           # No need to customise
+  # No need to customise
+  maxvar <- length(var)
   maxvar
 
-  # SLOW. ALLOW A MINUTE TO EXECUTE CreateTableOne.
+  # SLOW. ALLOW A MINUTE TO EXECUTE fn_CreateTableOne_table
   # One needs to install "tableone" package.
   # Ignore this if installation is unsuccessful.
-  # The function prints a summary distribution table, then save it as .txt file then launches the .txt file.
+  # The function prints a summary
+  # distribution table and save it as .txt file.
+  # The generated txt file launches automatically.
 
-  # txtfile <- "wtsample_summary.txt"
+  txtfile <- "wtsample_summary.txt"
   # fn_CreateTableOne_table()
 
 ##H ----------------------------------
@@ -95,9 +100,9 @@ fn_maxvar5_freq_table()
 
     # View(freq_table)
 
-# Manual, check the total.
-sum(freq_table[1:6, "n"])
-sum(freq_table[1:6, "p"])
+    # Manual, check the total.
+    sum(freq_table[1:6, "n"])
+    sum(freq_table[1:6, "p"])
 
 # automatic, check the total.
 freq_table %>% group_by(by3, by1) %>%
@@ -130,9 +135,9 @@ Weightedsample_freq_table <- freq_table %>%
 save(Weightedsample_freq_table,
   file="Output/04-RData/Weightedsample_freq_table.RData")
 
-#H--------------------------------------------------
+#H-----------------------------------------------
 #H This is for demo version. So, it may be overwritten.
-#H--------------------------------------------------
+#H----------------------------------------------
 #H################################################
 ##H ----------------------------------------
 ## > PREP PART 1B. ----
@@ -141,7 +146,7 @@ save(Weightedsample_freq_table,
 ##H ----------------------------------------
 
 # xlsxfile <- "Weightedsample_freq_table.xlsx"
-# # fn_xlsx_open()
+# fn_xlsx_open()
 # file <- "WeightedSample_Data_Summary.txt"
 
 #H---------------------------------------
@@ -169,8 +174,13 @@ var <- c("geog1", "sex", "agecode1",
           "eth_code5", "econg")
 (maxvar <- length(var))
 
-# SLOW. ALLOW A MINUTE TO EXECUTE CreateTableOne.
-# The function prints a summary distribution table, then save it as .txt file then launches the .txt file.
+
+# SLOW. ALLOW A MINUTE TO EXECUTE fn_CreateTableOne_table
+# One needs to install "tableone" package.
+# Ignore this if installation is unsuccessful.
+# The function prints a summary
+# distribution table and save it as .txt file.
+# The generated txt file launches automatically.
 
 # txtfile <- "census_summary.txt"
 # fn_CreateTableOne_table()
@@ -217,9 +227,8 @@ fn_maxvar5_freq_table()
 
 # Now, n * 50, rename after checking's done!
 freq_table  <- freq_table %>%
-          rename( raw_n = n) %>%
-          mutate(
-            n = raw_n * 50) %>%
+          rename(raw_n = n) %>%
+          mutate(n = raw_n * 50) %>%
           dplyr::select(seq, twdigits,
             raw_n, n, p, everything() )
 
@@ -237,17 +246,17 @@ freq_table  <- freq_table %>%
 
     # View(freq_table)
 
-# Manual, check the total.
-sum(freq_table[1:6, "n"])
-sum(freq_table[1:6, "p"])
+    # Manual, check the total.
+    sum(freq_table[1:6, "n"])
+    sum(freq_table[1:6, "p"])
 
 # automatic, check the total.
 freq_table %>% group_by(by3, by1) %>%
   summarise(sum_freq = sum(n), sum_p = sum(p))
 
-#H---------------------------------------
+#H---------------------------------
 ## > Step 5. Rename and save ----
-#H--------------------------------------
+#H---------------------------------
 
 Weightedsample_freq_table <- freq_table %>%
           dplyr::select(seq, twdigits,
@@ -255,9 +264,9 @@ Weightedsample_freq_table <- freq_table %>%
             wtsample_perc = p, everything())
 # View(Weightedsample_freq_table)
 
-##H ----------------------------------------
+##H ---------------------------------
 ## > Step 6. Export outputs  ----
-##H ----------------------------------------
+##H ---------------------------------
 
   sheets <- list(
     "Weightedsample_freq_table" = Weightedsample_freq_table,
@@ -268,9 +277,9 @@ Weightedsample_freq_table <- freq_table %>%
   write_xlsx(sheets, xlsx_path_file)
   fn_xlsx_open()
 
-##H ----------------------------------------
+##H --------------------------------
 ## > Step 7. Save RData ----
-##H ----------------------------------------
+##H --------------------------------
 
 save(Weightedsample_freq_table,
   file="Output/04-RData/Weightedsample_freq_table.RData")

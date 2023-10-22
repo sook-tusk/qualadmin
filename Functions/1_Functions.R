@@ -681,7 +681,7 @@ fn_prep_aa_freq <-  function() {
     ## dummy variables ----
     #H--------------------------------------
     library("fastDummies")
-    # Intecept
+    # Intercept
     aa  <<-  aa %>% mutate(des1 = 1)
 
     # Allow a minute to execute.
@@ -829,7 +829,7 @@ fn_r_indicator_2_pop_respmean <- function() {
   respmean_row_vector <<- temp
   respmean_row_vector
   # Merge Step 1 out of 2
-  pop_respmean <<-  full_join( popmean_row_vector,
+  pop_respmean <<-  full_join(popmean_row_vector,
                       respmean_row_vector) %>%
             relocate(ttt, .after = last_col())
   # View(pop_respmean)
@@ -916,7 +916,7 @@ fn_R_indicators <- function() {
   px          <<- as.matrix(gh[, psam_col])
   rx          <<- as.matrix(gh[, rsam_col])
   #H--------------------------------------
-  ##>> Calculate propensity scores  ----
+  ##>> H. Calculate propensity scores  ----
   #H--------------------------------------
   # element-wise multiplication (by scalar) : *
   # matrix multiplication(mathematical): %*%
@@ -1142,6 +1142,17 @@ fn_R_indicators_partial <-  function() {
  partial  <<- leftright_ %>%
   mutate(fct_domain = factor(domain, unique(domain))) %>%
   relocate(fct_domain, .after = domain)
+  # Create level variable for plotting
+  partial <<- partial %>%
+   mutate(seq_from =
+    ifelse(domain == "resppop", 1,
+     ifelse(domain == "des1", 2, 0) )) %>%
+    mutate(level =
+      ifelse(domain != "resppop",
+        cumsum(seq_from), 99)) %>%
+    mutate(level =
+       ifelse(domain == "des1", 99, level)) %>%
+   relocate(level,.after = seq)
   cat("-- End of fn_r_indicator_partial --")
 }
 

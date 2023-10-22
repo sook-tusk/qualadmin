@@ -25,6 +25,7 @@ fn_output_folder_path()
 ## (to serve as the benchmarks)
 # H------------------------------------------
 
+# Run the previous file for updates
 # source("2_Prep_Wtsample_Freq_Table.R")
 
 xlsxfile <- "Weightedsample_freq_table.xlsx"
