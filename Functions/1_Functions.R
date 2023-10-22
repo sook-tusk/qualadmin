@@ -1152,8 +1152,8 @@ fn_R_indicators_partial <-  function() {
         cumsum(seq_from), 99)) %>%
     mutate(level =
        ifelse(domain == "des1", 99, level)) %>%
-   relocate(level,.after = seq)
-  cat("-- End of fn_r_indicator_partial --")
+    relocate(level,.after = seq)
+  cat("-- End of fn_R_indicators_partial --")
 }
 
 # > R-indicator, Sub-functions
