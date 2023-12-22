@@ -1,15 +1,14 @@
 
-# Run Custom_Path.R if necessary.
-# rm(list = ls())
-getwd()
 
-# Disable scientific notation.
-options(scipen = 999)
+# Run Custom_Path.R if necessary.
+rm(list = ls())
+getwd()
 
 # Define output file folders, path
 source("Functions/1_Functions.R")
 
-fn_output_folder_path()
+# Disable scientific notation.
+options(scipen = 999)
 
     library("dplyr")     # data manipulation
     library("ggplot2")   # visualisation
@@ -25,25 +24,25 @@ fn_output_folder_path()
 ## (to serve as the benchmarks)
 # H------------------------------------------
 
-# Run the previous file for updates
-# source("2_Prep_Wtsample_Freq_Table.R")
+# Run the file to obtain Weightedsample_freq_table
+source("2_Prep_Wtsample_Freq_Table.R")
 
 xlsxfile <- "Weightedsample_freq_table.xlsx"
 # fn_xlsx_open()
 
-## Now admin data
-
 #H------------------------------
+## Now admin data
 ## > Step 1: read admin data ----
 #H------------------------------
 
-# changed from read_csv
 df  <- read_csv("public_release_admin.csv")
-nrow(df)
-head(df)
 
-glimpse(df)
-names(df)
+# rename, keep variables of interest and sort
+df <- df %>%
+ dplyr::select(-person_id) %>%
+ arrange(geog1, sex, agecode1, eth_code5, econg)
+
+head(df)
 
 # View(df[1:100, ])
 
@@ -51,16 +50,9 @@ names(df)
 ##>>  Initial look on admin freq tables
 #H------------------------------------------
 
-# Declare variables to be used.
-# Please customise as needed.
-  var <- c("geog1", "sex", "agecode1",
-            "eth_code5", "econg")
-
 # Check, first and second variables
 # Please inspect if frequency counts are correct!
-
-    var
-
+    var  <- names(df) ; var
     df %>% tabyl(var[1]) %>% adorn_totals()
     df %>% tabyl(var[2]) %>% adorn_totals()
 
@@ -71,109 +63,65 @@ names(df)
 ## >  Step 2: Obtain admin freq tables ----
 #H------------------------------------------
 
-  maxvar <- length(var)
-  maxvar
-  t     <- NULL
-  last  <- NULL
+fn_maxvar5_freq_table()
 
-# Obtain frequency tables
-  fn_maxvar5_freq_table()
-
-  Admin_f_table_one  <- freq_table %>%
+Admin_f_table_one <- freq_table %>%
     rename(admin_n = n, admin_perc = p)
 
-  # View(Admin_f_table_one)
-
-#H----------------------------------------------
-## > Step 2: Inspect
-#H----------------------------------------------
-  # Elaborate in manual.
-  head(Admin_f_table_one)
-  tail(Admin_f_table_one)
-
-
+## > Inspect (Elaborate in manual)
   dim(Admin_f_table_one)
-  names(Admin_f_table_one)
+  # head(Admin_f_table_one)
+  tail(Admin_f_table_one)
+  # names(Admin_f_table_one)
+  # View(Admin_f_table_one)
+  # View(Weightedsample_freq_table)
 
 #H----------------------------------------------
 ## >  Step 3: Merge admin + Wtsample  freq table ----
 #H----------------------------------------------
 
-fn_merge_one_admin_wtsample_f_table_temp()
-print(temp[1:20, 1:9])
-names(temp)
+freq_table2 <- full_join(Weightedsample_freq_table,
+                  Admin_f_table_one)
+
+freq_table2 <- freq_table2 %>%
+    relocate(starts_with("by"), .after = last_col())
+  dim(freq_table2)
+  print(freq_table2[1:20, 1:9])
 # View(temp)
 
-#H----------------------------------------------
-## > Ready to move onto distance metrics
-#H----------------------------------------------
-
-#H----------------------------------------------
-## > Step 4: Create Quality indicators DOMAIN ----
-#H----------------------------------------------
-
-  fn_create_domain_temp()
-
-  # View(temp)
-
-  display_domain <- temp
-
-  # for user manual, display_domain
-  display_domain %>% tabyl(fct_domain)
-
 #H ----------------------------------------
-#> Step 5: Compute distance_metrics ----
+#> Step 4: Compute distance_metrics ----
 #H ----------------------------------------
 
-fn_unstd_distance_metrics_full()
-# View(unstd_distance_metrics_full)
-
-fn_unstd_distance_metrics_tidy()
-# View(unstd_distance_metrics_tidy)
-
-#H ----------------------------------------
-# > Step 6: Standardise distance metrics ----
-#H ----------------------------------------
-
-  temp <- unstd_distance_metrics_tidy %>%
-    mutate(
-     Std_Duncan = 1 - Duncan,
-     Std_t_HD = 1-HD,
-     Std_t_KL = 1-KL
-   )
-
-  std_distance_metrics_wide  <- temp
+fn_distance_metrics()
+# View(distance_metrics)
+distance_metrics[1:6, 1:6]
 
 ##H ----------------------------------------
 ##>> CHECK: (OPTIONAL) launch distance_metrics_wide
-##H ----------------------------------------
+##H
+----------------------------------------
 
- xlsxfile <- "distance_metrics_wide.xlsx"
+ xlsxfile <- "distance_metrics.xlsx"
   fn_xlsx_path_file()
-  write_xlsx(std_distance_metrics_wide, xlsx_path_file)
-  fn_xlsx_open()
+  write_xlsx(distance_metrics, xlsx_path_file)
+  # fn_xlsx_open()
 
 #H-------------------------------------
-## > Step 7: Reshape for plotting ----
+## > Step 5: Reshape for plotting ----
 #H-------------------------------------
 
-  fn_distance_metrics_long()
+fn_distance_metrics_long()
 
-  head(distance_metrics_long)
-  # View(distance_metrics_long)
-
-  df <- distance_metrics_long
-  # std_test(1-Duncan, 1-HD, 1-KL) only
-  df <- df %>% filter(std_test_use == 1)
-
-  # for manual
-  df[1:9, c(1:2, 4:5, 9)]
-
-# View(df)
+# Print all
+  upto  <- nrow(distance_metrics_long)
+  print(distance_metrics_long, n = upto)
 
 #H-------------------------------------
-## > Step 8a: Visualisation prep ----
+## > Step 6a: Visualisation prep ----
 #H-------------------------------------
+df  <- distance_metrics_long
+  # View(df)
 
   sh  <- scale_shape_manual(
           name = "Reference & indicator",
@@ -205,9 +153,8 @@ fn_unstd_distance_metrics_tidy()
     )
 
   theme_set(theme_bw())
-
 #H ----------------------------------------
-# >  Step 8b: Scatterplot, all 3 ----
+# >  Step 6b: Scatterplot, all 3 ----
 #H ----------------------------------------
 
 p <- df %>%
@@ -231,7 +178,7 @@ plot(p)
   ggsave(fig_path_file)
 
 #H ----------------------------------------
-# > Step 8: Scatterplot, NOT-flipped
+# > Step 6c: Scatterplot, NOT-flipped
 #H ----------------------------------------
 # View(df)
 

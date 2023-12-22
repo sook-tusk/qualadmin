@@ -31,4 +31,6 @@ warnings()
 # Computationally intensive procedures.
 source("3_B_R-indicator.R")
 
+source("3_B_Table-Based_R-indicator.R")
+
 ### End ###

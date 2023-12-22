@@ -5,6 +5,11 @@ getwd()
 
 source("Functions/1_Functions.R")
 
+
+##H ------------------------------
+##> fn_meanpop_auxiliary ----
+##H ------------------------------
+
 # Disable scientific notation.
 options(scipen = 999)
 
@@ -94,8 +99,6 @@ numcat <- nrow(col_auxiliary) ; numcat
   dummychk <- col_auxiliary
   dummychk %>% tabyl(by1, by2)
 
-# table(dummychk$by1, dummychk$by2) # alternatively
-
 # Keep meanpop only,
 # Recall meanpop = count / popsize
 keep <- c("meanpop")
@@ -116,8 +119,6 @@ print(col_auxiliary)
 
 # generate merge id, ttt.
   temp$ttt  <- 0
-
-  # View(temp)
 
   # Rename variables "popmean1- popmean26"
   names(temp) <- c(paste0("popmean", 1:numcat),
@@ -150,30 +151,30 @@ head(aa)
 ##> Step 3: Compute R-indicators ----
 #H-----------------------------------
 
-fn_RUN_R_indicator()
+fn_RUN_table_based_R_indicator()
 
-# Sub-routine of fn_R_indicator_all()
-    # fn_design_matrix()
-    # fn_freq()
-    # fn_respmean()
-    # fn_des_pop_respmean()
-    # fn_gh()
-    # fn_R_indicator()
-    # fn_rindicatorall()
-    # fn_partial()
+# Sub-routine of fn_RUN_table_based_R_indicators()
+     fn_t_design_matrix()
+     fn_freq()
+     fn_t_respmean()
+     fn_des_pop_respmean()
+     fn_gh ()
+     fn_t_R_indicator()
+     fn_t_rindicatorall()
+     fn_partial()
 
 # Inspection
  partial[1:17, c(1:4, 6:8)]
- # View(partial)
+      # View(partial)
 
 #H-----------------------------------
 ## > Step 4: Save in Excel
 #H-----------------------------------
 
-xlsxfile <- "R_indicator.xlsx"
+xlsxfile <- "Using_TableBased_R_indicator.xlsx"
   fn_xlsx_path_file()
   write_xlsx(partial, xlsx_path_file)
-  fn_xlsx_open()
+  # fn_xlsx_open()
 
 #H-------------------------------------
 ## > Step 5: Visualisation  ----
@@ -225,7 +226,7 @@ p1 <- partial %>%
   )
 plot(p1)
 
- figfile <- "R_indicator_scatter_Var_level.png"
+ figfile <- "t_R_indicator_scatter_Var_level.png"
   fn_fig_path_file()
   ggsave(fig_path_file)
 
@@ -247,7 +248,7 @@ p2 <- partial %>%
   )
 plot(p2)
 
- figfile <- "R_indicator_scatter_Category-level.png"
+ figfile <- "t_R_indicator_scatter_Category-level.png"
   fn_fig_path_file()
   ggsave(fig_path_file)
 
