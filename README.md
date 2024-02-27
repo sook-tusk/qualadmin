@@ -20,3 +20,4 @@ distance metrics and R-indicators.
 - v1.2 Jan 2023 Contents (RUNNING - 2_Prep_Wtsample_Freq_Table.R) enhanced
 - v2.0 Oct 2023 R-indicator summary spreadsheet and graphics automation improved
 - v2.1 Dec 2023 Tabled-based R-indicator functions added
+- v2.2 Feb 2024 R-indicator formula updated
