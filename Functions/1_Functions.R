@@ -891,17 +891,22 @@ fn_t_R_indicator <-  function() {
                 (s2term11b-(s2term21 * s2term21))
   var_s2T11c    <- (popsize/(popsize-1)) *
                (s2term11c-(s2term21 * s2term21))
-  # R-indicators: 1 - 2SD = 1 - 2SD of propensity scores
-  r_ind1b <- 1 - 2 * sqrt(var_s2T11b) # prop_mix-based
-  r_ind1c <- 1 - 2 * sqrt(var_s2T11c) # prop_pop-based
+    var_s2T11b ; var_s2T11c
+    print(paste0("variance is ", var_s2T11b))
+  # R-indicators: not 1-2SD, 1-sqrt(0.06349736)
+  r_ind1b <- 1 - sqrt(var_s2T11b) # prop_mix-based
+  r_ind1c <- 1 - sqrt(var_s2T11c) # prop_pop-based
   prop_mix_based_R_indicator <- unname(r_ind1b)
   prop_pop_based_R_indicator <- unname(r_ind1c)
-  # Inspect propensity scores, Export
   R_indicator <- prop_mix_based_R_indicator
-  assign("R_indicator", R_indicator, .GlobalEnv)
+      R_indicator;
   assign("gh_prop_mix", gh_prop_mix, .GlobalEnv)
+  assign("R_indicator", R_indicator, .GlobalEnv)
+  return(R_indicator)
   cat("--- End of fn_t_R_indicator ---")
 }
+
+# Previously 0.4960263 Updated 0.7480132
 
 #=========================================
 ## > 6 fn_t_rindicatorall ----
@@ -1270,23 +1275,26 @@ fn_R_indicator <- function() {
   s2term21  <- (1/popsize) * colSums(weightf)
      s2term11b ; s2term11c ;   s2term21
   # variances:
-  s2T11b    <-  (popsize/(popsize-1)) *
+  var_s2T11b  <-  (popsize/(popsize-1)) *
                 (s2term11b-(s2term21 * s2term21))
-  s2T11c    <-  (popsize/(popsize-1)) *
+  var_s2T11c  <-  (popsize/(popsize-1)) *
                (s2term11c-(s2term21 * s2term21))
-  # R-indicators:
-  r_ind1b <-  1 - 2 * sqrt(s2T11b)
-  r_ind1c <-  1 - 2 * sqrt(s2T11c)
-    r_ind1b; r_ind1c
+    var_s2T11b ; var_s2T11c
+    print(paste0("variance is ", var_s2T11b))
+  # R-indicators: not 1-2SD, 1-sqrt(0.06349737)
+  r_ind1b <-  1 - 1 * sqrt(var_s2T11b)
+  r_ind1c <-  1 - 1 * sqrt(var_s2T11c)
   prop_mix_based_R_indicator <- unname(r_ind1b)
   prop_pop_based_R_indicator <- unname(r_ind1c)
   R_indicator <- prop_mix_based_R_indicator
+      R_indicator;
   assign("gh_prop_mix", gh_prop_mix, .GlobalEnv)
   assign("R_indicator", R_indicator, .GlobalEnv)
   return(R_indicator)
   cat("--- End of fn_R_indicator ---")
 }
 
+# Previously 0.4960263 Updated 0.7480132
 #H-----------------------------------
 ##>> 6 fn_rindicatorall ----
 #H-----------------------------------
