@@ -21,3 +21,4 @@ distance metrics and R-indicators.
 - v2.0 Oct 2023 R-indicator summary spreadsheet and graphics automation improved
 - v2.1 Dec 2023 Tabled-based R-indicator functions added
 - v2.2 Feb 2024 R-indicator formula updated
+- v2.3 Feb 2024 Minor updates
