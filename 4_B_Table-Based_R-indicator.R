@@ -5,11 +5,6 @@ getwd()
 
 source("Functions/1_Functions.R")
 
-
-##H ------------------------------
-##> fn_meanpop_auxiliary ----
-##H ------------------------------
-
 # Disable scientific notation.
 options(scipen = 999)
 
@@ -22,116 +17,33 @@ options(scipen = 999)
     library("writexl")   # export to Excel
     library("janitor")   # cross-tabulation
 
+#H-----------------------------------
+##> Step 1: Prep ----
+#H-----------------------------------
+
 #H--------------------------------------
-## > Step 1: Prepare an Auxiliary data file ----
+## > Prepare an Auxiliary data file ----
 #H--------------------------------------
-## Auxiliary file for R-indicator
 ##  Use Weightedsample_freq_table
 
-# Run if the earlier code has changed.
-# source("2_Prep_Wtsample_Freq_table.R")
+# Prep_auxiliary
+#  |
+#  |- 1A. Using an existing data
+#  |  |- frequency table (for distance metrics)
+#  |  |- bivariate counts (for R indicators)
+#  |  |- meanpop  (for R indicators)
+#  |
+#  |- 1B. Creating a weighted sample data
+#  |  |- frequency table
+#  |  |- bivariate counts
+#  |  |- meanpop
 
-#H-----------------------------------
-### >> Obtain population size
-#H-----------------------------------
+# Run one of the previous files as appropriate
+# source("2_A_Prep_auxiliary.R")
+source("2_B_Prep_auxiliary_CreateRandomSample.R")
 
-load(file = "Output/04-RData/Weightedsample_freq_table.RData")
-# View(Weightedsample_freq_table)
-
-head(Weightedsample_freq_table)
-
-# create popsize (to be used for auxiliary file)
-# Popsize: oneway total of the first variable.
-# Please do not use manuallay (e.g. popsize <- 1163650).
-# The programme may not run as intended.
-popsize <- Weightedsample_freq_table %>%
-           filter(twdigits < 200) %>%
-          summarise(popsize = sum(wtsample_n))
-popsize <- as.numeric(popsize)
-popsize ; class(popsize)
-
-freq_table <- data.frame(Weightedsample_freq_table, popsize)
-
-head(freq_table)
-glimpse(freq_table)
-# wtsample 1163650  # Census obs = 1163659
-
-# Compute meanpop using freq_table,
-# Create auxiliary data
-  fn_meanpop_auxiliary()
-
-# Output
-print(auxiliary)
-# View(auxiliary)
-
-# (Optional) Save intermediate RData
-  save(auxiliary, file = "Output/04-RData/auxiliary.RData")
-
-  write_xlsx(auxiliary,
-    "Output/03-ExcelOutput/auxiliary.xlsx")
-  # Launches the Excel file (Windows PC)
-  # shell.exec("Output\\03-ExcelOutput\\auxiliary.xlsx")
-
-#H-----------------------------------
-## >> Calculate meanpop
-#H-----------------------------------
-# prepare the data to build design matrix
-nrow(auxiliary)
-
-col_auxiliary <- auxiliary %>%
-             group_by(by1) %>%
-             mutate(
-              lastcat_ = ifelse(by2 == max(by2), 1, 0),
-              lastcat = ifelse(seq == 1, 0, lastcat_)
-            ) %>%
-             filter(lastcat == 0) %>%
-             dplyr::select(-c(lastcat_, lastcat)) %>%
-             ungroup()
-dim(col_auxiliary)
-col_auxiliary[1:10, ]
-
-# Identify the numcat & create a macro
-# Remove rows if lastcat
-nrow(col_auxiliary)
-numcat <- nrow(col_auxiliary) ; numcat
-
-# Inspect dummy variables
-  dummychk <- col_auxiliary
-  dummychk %>% tabyl(by1, by2)
-
-# Keep meanpop only,
-# Recall meanpop = count / popsize
-keep <- c("meanpop")
-col_auxiliary <- data.frame(col_auxiliary[keep])
-
-# Print the column vector, meanpop() before transposing the data.
-print(col_auxiliary)
-
-#H---------------------------------------
-## >> Reshape and save wtsample distributions ----
-## as row vectors
-#H---------------------------------------
-
-# Transpose to arrange in the row vector format.
-  temp <- t(col_auxiliary)
-  temp <- as.data.frame(temp)
-  row.names(temp) <- 1:nrow(temp)
-
-# generate merge id, ttt.
-  temp$ttt  <- 0
-
-  # Rename variables "popmean1- popmean26"
-  names(temp) <- c(paste0("popmean", 1:numcat),
-                          "ttt")
-
-# Save
-  popmean_row_vector <- temp
-
-# Check
-  # View(popmean_row_vector)
-
-  names(popmean_row_vector)
-  popmean_row_vector[, 1:5]
+# Declare popsize
+popsize <- popcov[1,1]; popsize
 
 #H-----------------------------------
 ##> Step 2: Prepare the admin data ----
@@ -151,12 +63,10 @@ head(aa)
 ##> Step 3: Compute R-indicators ----
 #H-----------------------------------
 
-fn_RUN_table_based_R_indicator()
+# fn_RUN_table_based_R_indicator()
 
 # Sub-routine of fn_RUN_table_based_R_indicators()
      fn_t_design_matrix()
-     fn_freq()
-     fn_t_respmean()
      fn_des_pop_respmean()
      fn_gh ()
      fn_t_R_indicator()
@@ -164,7 +74,7 @@ fn_RUN_table_based_R_indicator()
      fn_partial()
 
 # Inspection
- partial[1:17, c(1:4, 6:8)]
+  partial[1:17, c(1:4, 6:8)]
       # View(partial)
 
 #H-----------------------------------
@@ -174,7 +84,7 @@ fn_RUN_table_based_R_indicator()
 xlsxfile <- "Using_TableBased_R_indicator.xlsx"
   fn_xlsx_path_file()
   write_xlsx(partial, xlsx_path_file)
-  # fn_xlsx_open()
+  fn_xlsx_open()
 
 #H-------------------------------------
 ## > Step 5: Visualisation  ----

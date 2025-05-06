@@ -1,4 +1,5 @@
 
+
 ##=============================================
 #   Run this code to ...
 #   Run distance metrics, R-indicators
@@ -10,27 +11,28 @@
 rm(list = ls())
 getwd()
 
-#H------------------------------
-##> 1. Load functions
-#H------------------------------
-
-source("Functions/1_Functions.R")
 
 #H------------------------------
-##> 2. Quality Measures
+##> 2. Auxiliary files
+#H------------------------------
+# Choose one
+# source("2_A_Prep_auxiliary.R")
+source("2_B_Prep_auxiliary_CreateRandomSample.R")
+
+
+#H------------------------------
+##> 3. Quality Measures
 #H------------------------------
 
-source("2_Prep_Wtsample_Freq_Table.R")
-
-source("3_A_Distance_Metrics.R")
+source("3_Distance_Metrics.R")
 
 # Ignorable warnings. Just check.
 warnings()
 
 # Allow a minute to run.
 # Computationally intensive procedures.
-source("3_B_R-indicator.R")
+source("4_A_R-indicator.R")
 
-source("3_B_Table-Based_R-indicator.R")
+source("4_B_Table-Based_R-indicator.R")
 
 ### End ###

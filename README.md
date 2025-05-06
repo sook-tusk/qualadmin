@@ -22,3 +22,4 @@ distance metrics and R-indicators.
 - v2.1 Dec 2023 Tabled-based R-indicator functions added
 - v2.2 Feb 2024 R-indicator formula updated
 - v2.3 Feb 2024 Minor updates
+- v3.0 May 2025 Bivariate counts added & poprespmean streamlined

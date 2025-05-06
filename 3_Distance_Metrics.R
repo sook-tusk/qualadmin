@@ -1,5 +1,4 @@
 
-
 # Run Custom_Path.R if necessary.
 rm(list = ls())
 getwd()
@@ -18,79 +17,17 @@ options(scipen = 999)
     library("writexl")   # export to Excel
     library("janitor")   # cross-tabulation
 
-# H------------------------------------------
-##  Preliminary step
-## > 0. Obtain wtsample f_table
-## (to serve as the benchmarks)
-# H------------------------------------------
+#H-----------------------------------
+##> Step 1: Prep  ----
+#H-----------------------------------
+# Run one of the previous files as appropriate
+# source("2_A_Prep_auxiliary.R")
+source("2_B_Prep_auxiliary_CreateRandomSample.R")
 
-# Run the file to obtain Weightedsample_freq_table
-source("2_Prep_Wtsample_Freq_Table.R")
-
-xlsxfile <- "Weightedsample_freq_table.xlsx"
-# fn_xlsx_open()
-
-#H------------------------------
-## Now admin data
-## > Step 1: read admin data ----
-#H------------------------------
-
-df  <- read_csv("public_release_admin.csv")
-
-# rename, keep variables of interest and sort
-df <- df %>%
- dplyr::select(-person_id) %>%
- arrange(geog1, sex, agecode1, eth_code5, econg)
-
-head(df)
-
-# View(df[1:100, ])
-
-#H------------------------------------------
-##>>  Initial look on admin freq tables
-#H------------------------------------------
-
-# Check, first and second variables
-# Please inspect if frequency counts are correct!
-    var  <- names(df) ; var
-    df %>% tabyl(var[1]) %>% adorn_totals()
-    df %>% tabyl(var[2]) %>% adorn_totals()
-
-    # cross-tabulation
-    addmargins(table(df[, c(var[1], var[2])]))
-
-#H------------------------------------------
-## >  Step 2: Obtain admin freq tables ----
-#H------------------------------------------
-
-fn_maxvar5_freq_table()
-
-Admin_f_table_one <- freq_table %>%
-    rename(admin_n = n, admin_perc = p)
-
-## > Inspect (Elaborate in manual)
-  dim(Admin_f_table_one)
-  # head(Admin_f_table_one)
-  tail(Admin_f_table_one)
-  # names(Admin_f_table_one)
-  # View(Admin_f_table_one)
-  # View(Weightedsample_freq_table)
-
-#H----------------------------------------------
-## >  Step 3: Merge admin + Wtsample  freq table ----
-#H----------------------------------------------
-
-freq_table2 <- full_join(Weightedsample_freq_table,
-                  Admin_f_table_one)
-
-freq_table2 <- freq_table2 %>%
-    relocate(starts_with("by"), .after = last_col())
-  dim(freq_table2)
-  print(freq_table2[1:20, 1:9])
-# View(temp)
+  head(pop_admin_freq_table)
 
 #H ----------------------------------------
-#> Step 4: Compute distance_metrics ----
+#> Step 2: Compute distance_metrics ----
 #H ----------------------------------------
 
 fn_distance_metrics()
@@ -98,17 +35,17 @@ fn_distance_metrics()
 distance_metrics[1:6, 1:6]
 
 ##H ----------------------------------------
-##>> CHECK: (OPTIONAL) launch distance_metrics_wide
-##H
-----------------------------------------
+##>> Export
+##H----------------------------------------
 
- xlsxfile <- "distance_metrics.xlsx"
+ # xlsxfile <- "distance_metrics.xlsx"
+ xlsxfile <- "weightedsample_distance_metrics.xlsx"
   fn_xlsx_path_file()
   write_xlsx(distance_metrics, xlsx_path_file)
   # fn_xlsx_open()
 
 #H-------------------------------------
-## > Step 5: Reshape for plotting ----
+## > Step 3: Reshape for plotting ----
 #H-------------------------------------
 
 fn_distance_metrics_long()
@@ -118,7 +55,7 @@ fn_distance_metrics_long()
   print(distance_metrics_long, n = upto)
 
 #H-------------------------------------
-## > Step 6a: Visualisation prep ----
+## > Step 4a: Visualisation prep ----
 #H-------------------------------------
 df  <- distance_metrics_long
   # View(df)
@@ -154,7 +91,7 @@ df  <- distance_metrics_long
 
   theme_set(theme_bw())
 #H ----------------------------------------
-# >  Step 6b: Scatterplot, all 3 ----
+# >  Step 4b: Scatterplot, all 3 ----
 #H ----------------------------------------
 
 p <- df %>%
@@ -173,12 +110,13 @@ p <- df %>%
     ) + sh + s
 plot(p)
 
- figfile <- "Scatter_distance_metrics_all3_flipped.png"
+ # figfile <- "scatter_distancemetrics.png"
+ figfile <- "weightedsample_scatter_distancemetrics.png"
   fn_fig_path_file()
-  ggsave(fig_path_file)
+ ggsave(fig_path_file)
 
 #H ----------------------------------------
-# > Step 6c: Scatterplot, NOT-flipped
+# > Step 4c: Scatterplot, NOT-flipped
 #H ----------------------------------------
 # View(df)
 
@@ -198,7 +136,8 @@ pz <- df %>%
   ) + sh + s
 plot(pz)
 
- figfile <- "Scatter_distance_metrics_not_flipped.png"
+ # figfile <- "scatter_distancemetrics2.png"
+ figfile <- "weightedsample_scatter_distancemetrics2.png"
   fn_fig_path_file()
   ggsave(fig_path_file)
 
