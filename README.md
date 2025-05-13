@@ -3,7 +3,7 @@
 Repository for "Quality Indicators for Administrative Data
 User Manual For R Package on GitHub - User Manual".
 
-The project is funded by the Grant: ‘Methodological Advancements on the Use of Administrative Data in Official Statistics’ ESRC (ES/V005456/1).
+The project was funded by the Grant: ‘Methodological Advancements on the Use of Administrative Data in Official Statistics’ ESRC (ES/V005456/1), United Kingdom.
 
 ## A Brief Introduction
 
