@@ -888,33 +888,14 @@ fn_t_design_matrix <- function() {
   ##  2) Produce a pp table ----
   #H-----------------------------------
    # 2520 = 6*2*14*5*3
-   gridrow  <- prod(nvar); gridrow
-   produpto <- maxvar - 1  ; produpto
-    # set each
-   prod_list  <- list()
-    for (i in 2:maxvar) {
-      element <- prod(nvar[i:maxvar])
-      prod_list[[length(prod_list) + 1]] <- element
-    }
-   lastgrid <- rep(1:nvar[maxvar], each = 1,
-                   length.out = gridrow)
-      # Remaining grid
-      grid_list  <- list()
-      for (i in 1:produpto) {
-        element <- rep(seq(1:nvar[i]),
-          each = prod_list[[i]], length.out = gridrow)
-        grid_list[[length(grid_list) + 1]] <- element
-      }
-  # Combine all
-  grid <- data.frame(rlist::list.cbind(grid_list))
-  grid <- cbind(grid, lastgrid)
-  names(grid) <- var
+  g <- expand.grid(levelsvar)
+  library(data.table)
+  grid <- setorderv(g, var)
   grid <- grid %>% dplyr::select(any_of(var)) %>%
             mutate_at(var, factor)
   pp <- grid %>%
         mutate(pp_seq = row_number()) %>%
         dplyr::select(pp_seq, everything() )
-  # print(pp[1:30, ])
   #H-----------------------------------
   ##  3) weights ----
   #H-----------------------------------
@@ -942,7 +923,6 @@ fn_t_design_matrix <- function() {
     mutate(wgt_nnn = n * finalwgt_global) %>%
     rename(nnn = n) %>%
     mutate(piinv = nnn)
-        head(matched_wgt)
   #  Treat 456 missing comb cases with 0 weights
   # Fill 0 with nnn, piinv, finalwgt
   temp_remove <- c(var, "seq", "finalwgt")
@@ -951,17 +931,17 @@ fn_t_design_matrix <- function() {
        mutate(nnn = 0,
         finalwgt_global = finalwgt_global,
         wgt_nnn = 0,  piinv = 0)
-  # Check the total combinations: 6*2*14*16=2688
-    nrow(matched_wgt) + nrow(mi)
+  # Check the total combinations
+  # nrow(matched_wgt) + nrow(mi)
   # pp table (Combination) with weights
   matched_wgtmi <- bind_rows(matched_wgt, mi)
   pall <- pp %>% full_join(matched_wgtmi)
   pall <- pall %>%
-          relocate(pp_seq, .before = nnn)
-        # for user manual
-        missing  <- nrow(mi); missing
-        ppaafrom <- nrow(ppaa) - missing - 4
-        ppaato   <- ppaafrom + 10
+          relocate(pp_seq, .after = last_col())
+    # for user manual
+    # missing  <- nrow(mi); missing
+    # ppaafrom <- nrow(ppaa) - missing - 4
+    # ppaato   <- ppaafrom + 10
   # print(ppaa[ppaafrom: ppaato, ])
   #H--------------------------------------
   ## 4) pp_design_matrix  ----
@@ -987,8 +967,7 @@ fn_t_design_matrix <- function() {
   # Rename design matrix columns as des variables
   # to be merged with pop_respmean, mergingid=ttt
   colnames(design_matrix) <- c(names(aa), paste0("des", 1:numcat), "wgt_nnn", "piinv")  # "nnn",
-  # design_matrix <- cbind(design_matrix, ttt = 0)
-      head(design_matrix, n = 3)
+      tail(design_matrix, n = 3)
 
   t_design_matrix <- design_matrix
     assign("resppop", resppop, .GlobalEnv)
