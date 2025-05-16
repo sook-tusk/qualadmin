@@ -20,6 +20,7 @@ install.packages("ggplot2")
 install.packages("readr")
 install.packages("tidyr")
 install.packages("stringr")
+install.packages("data.table")
 
 install.packages("rlist")
 install.packages("fastDummies")
