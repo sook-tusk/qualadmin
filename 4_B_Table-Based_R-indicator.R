@@ -63,15 +63,20 @@ head(aa)
 ##> Step 3: Compute R-indicators ----
 #H-----------------------------------
 
+# run the master function (default is type 2)
+fn_RUN_table_based_R_indicator()
+
+# run the master function for type 1
+# type <- 1
 # fn_RUN_table_based_R_indicator()
 
 # Sub-routine of fn_RUN_table_based_R_indicators()
-     fn_t_design_matrix()
-     fn_des_pop_respmean()
-     fn_gh ()
-     fn_t_R_indicator()
-     fn_t_rindicatorall()
-     fn_partial()
+     # fn_t_design_matrix()
+     # fn_des_pop_respmean()
+     # fn_gh()
+     # fn_t_R_indicator()
+     # fn_t_rindicatorall()
+     # fn_partial()
 
 # Inspection
   partial[1:17, c(1:4, 6:8)]
