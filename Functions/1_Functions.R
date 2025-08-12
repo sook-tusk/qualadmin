@@ -519,7 +519,7 @@ fn_design_matrix <-  function() {
     assign("design_matrix", design_matrix, .GlobalEnv)
     assign("design_matrix_names", design_matrix_names, .GlobalEnv)
     assign("vvv",     vvv, .GlobalEnv)
-    cat("--- End of fn_design_matrix ---")
+    cat("--- End of fn_design_matrix --- \n")
 }
 
 
@@ -540,7 +540,7 @@ fn_des_pop_respmean <- function() {
   # Inspect
       names(des_pop_respmean)
   assign("des_pop_respmean", des_pop_respmean, .GlobalEnv)
-  cat("--- End of fn_des_pop_respmean ---")
+  cat("--- End of fn_des_pop_respmean --- \n")
 }
 
 #H-----------------------------------
@@ -568,9 +568,8 @@ fn_gh <-  function() {
   gh <-  cbind(des_pop_respmean, rpsam)
   gh <-  gh %>%
    relocate(c(responsesamp1, seq), .after = last_col() )
-      names(gh)
   assign("gh", gh, .GlobalEnv)
-  cat("--- End of fn_gh, Pre-matrix ---")
+  cat("--- End of fn_gh, Pre-matrix --- \n")
 }
 
 
@@ -586,10 +585,8 @@ fn_R_indicator <- function() {
   px          <- as.matrix(gh[, psam_col])
   rx          <- as.matrix(gh[, rsam_col])
   #H--------------------------------------
-  ## 1) Calculate propensity scores  ----
+  ##  Calculate propensity scores  ----
   #H--------------------------------------
-  # element-wise multiplication (by scalar) : *
-  # matrix multiplication(mathematical): %*%
   xxp  <-   t(px) %*% px   # psam
   xxr  <-   t(rx) %*% rx   # rsam
   # zp is row vector.
@@ -625,18 +622,9 @@ fn_R_indicator <- function() {
   # Save as user-friendly object names
   prop_mix <-  roimix
   prop_pop <-  roipop
-  #H---------------------------------
-  ## 2) add weighted prop score ----
-  #H---------------------------------
-  # to be used in partial R-indicators
-  # rindicmix is gh_prop_mix
-  gh_prop_mix  <- cbind(gh, prop_mix) %>%
-     mutate(roi = prop_mix) %>%
-     relocate(finalwgt, piinv, .after = last_col())
   #H--------------------------------------
-  ## 3) Compute R-indicators ----
+  ##  Compute R-indicators ----
   #H--------------------------------------
-  # Use data frame now. # roimix = prop_mix
   ee1b <- as.data.frame(weightf * roimix)
   ee1c <- as.data.frame(weightf * roipop)
   s2term11b <- (1/popsize) * colSums(ee1b)
@@ -648,36 +636,62 @@ fn_R_indicator <- function() {
                 (s2term11b-(s2term21 * s2term21))
   var_s2T11c  <-  (popsize/(popsize-1)) *
                (s2term11c-(s2term21 * s2term21))
-    var_s2T11b ; var_s2T11c
-    print(paste0("variance is ", var_s2T11b))
   # R-indicators: 1-SD(var_of_propensityscores)
-  r_ind1b <-  1 - sqrt(var_s2T11b)
   r_ind1c <-  1 - sqrt(var_s2T11c)
-  prop_mix_based_R_indicator <- unname(r_ind1b)
+  r_ind1b <-  1 - sqrt(var_s2T11b)
   prop_pop_based_R_indicator <- unname(r_ind1c)
-      prop_pop_based_R_indicator
+  prop_mix_based_R_indicator <- unname(r_ind1b)
+  cat("--- R_indicators computed --- \n")
+  assign("prop_mix", prop_mix, .GlobalEnv)
+  assign("prop_pop", prop_pop, .GlobalEnv)
+  assign("prop_pop_based_R_indicator", prop_pop_based_R_indicator, .GlobalEnv)
+  assign("prop_mix_based_R_indicator", prop_mix_based_R_indicator, .GlobalEnv)
+  #H---------------------------------
+  ##>> 4) Create gh_prop ----
+  ##  corresponds to rindicmix
+  #H---------------------------------
+  type0 <- ifelse(exists("type"), type, 2)
+  if (type0 == 2) {
+   gh_prop  <- cbind(gh, prop_mix) %>%
+     mutate(roi = prop_mix)  %>%
+     relocate(finalwgt, piinv, .after = last_col())
+    print(paste0("type 2 R_indicator is ", prop_mix_based_R_indicator))
   R_indicator <- prop_mix_based_R_indicator
-      R_indicator;
-  assign("gh_prop_mix", gh_prop_mix, .GlobalEnv)
+  assign("gh_prop", gh_prop, .GlobalEnv)
   assign("R_indicator", R_indicator, .GlobalEnv)
   return(R_indicator)
-  cat("--- End of fn_R_indicator ---")
+  } else if (type0 == 1) {
+   gh_prop  <- cbind(gh, prop_pop) %>%
+     mutate(roi = prop_pop)  %>%
+     relocate(finalwgt, piinv, .after = last_col())
+    print(paste0("type 1 R_indicator is ", prop_pop_based_R_indicator))
+  R_indicator <- prop_pop_based_R_indicator
+  assign("gh_prop", gh_prop, .GlobalEnv)
+  assign("R_indicator", R_indicator, .GlobalEnv)
+  return(R_indicator)
+  } else {
+   gh_prop  <- cbind(gh, prop_mix) %>%
+     mutate(roi = prop_mix)  %>%
+     relocate(finalwgt, piinv, .after = last_col())
+    print(paste0("type 2 R_indicator is ", prop_mix_based_R_indicator))
+  R_indicator <- prop_mix_based_R_indicator
+  assign("gh_prop", gh_prop, .GlobalEnv)
+  assign("R_indicator", R_indicator, .GlobalEnv)
+  return(R_indicator)
+  }
 }
 
 # Previously 0.4960263 Updated 0.7480132
-
-
 
 #H-----------------------------------
 ##>> 5 fn_rindicatorall ----
 #H-----------------------------------
 
 fn_rindicatorall <- function() {
-    ##  Sum, mean of finalwgt
     #H---------------------------------
     ## 1) Weighted propensity scores ----
     #H---------------------------------
-    df      <- gh_prop_mix
+    df      <- gh_prop
     a_list  <- list()
     bb_list <- list()
     for (i in 1:maxvar) {
@@ -712,7 +726,7 @@ fn_rindicatorall <- function() {
     #H------------------------------------
     ##  2) Overall mean of propensities ----
     #H------------------------------------
-    mrphatall    <- mean(gh_prop_mix$roi) ; mrphatall
+    mrphatall    <- mean(gh_prop$roi) ; mrphatall
     fbar_mrphat_ <- data.frame(fbar_mrphat, mrphatall)
     # p2Zk = R_indicator, cvpsk=(abs(p2Zk))/mrphatall
     fbar_mrphat_  <- fbar_mrphat_ %>%
@@ -728,7 +742,7 @@ fn_rindicatorall <- function() {
     assign("mrphat", mrphat, .GlobalEnv)
     assign("mrphatall", mrphatall, .GlobalEnv)
     return(rindicatorall)
-  cat("--- End of fn_rindicatorall ---")
+  cat("--- End of fn_rindicatorall --- \n")
 }
 
 #H-----------------------------------
@@ -740,7 +754,6 @@ fn_partial <- function() {
   #H------------------------------------
   ## 1) Calculations – cat level ----
   #H------------------------------------
-  # p2Zk = R_indicator, cvpsk=(abs(p2Zk))/mrphatall
     popsize <- as.numeric(popsize)
     p2Zk_list  <- list()
     p1Zk_list  <- list()
@@ -846,13 +859,14 @@ fn_partial <- function() {
            ifelse(domain == "total", 99, level)) %>%
         relocate(level,.after = seq)
       assign("partial", partial, .GlobalEnv)
-      cat("-- End of fn_partial, object partial created --")
+ cat("-- End of fn_partial, object partial created-- \n")
 }
 
 ## > ===============================
 #===================================
-##>  TABLE-BASED R_INDICATOR   ----
+## >  TABLE-BASED R_INDICATOR   ----
 #===================================
+
 fn_RUN_table_based_R_indicator <- function() {
      fn_t_design_matrix()
      fn_des_pop_respmean()
@@ -862,7 +876,6 @@ fn_RUN_table_based_R_indicator <- function() {
      fn_partial()
 }
 
-
 #=========================================
 # > 1 fn_t_design_matrix
 #=========================================
@@ -871,7 +884,7 @@ fn_t_design_matrix <- function() {
   #H-----------------------------------
   ##  1) lastcat   ----
   #H-----------------------------------
-    var  <- names(aa) ; var
+    var <- names(aa) ; var
     variablenum <- length(var)
     maxvar      <- length(var)
     aa <- aa %>% dplyr::select(any_of(var)) %>%
@@ -888,12 +901,11 @@ fn_t_design_matrix <- function() {
   ##  2) Produce a pp table ----
   #H-----------------------------------
    # 2520 = 6*2*14*5*3
-  g <- expand.grid(levelsvar)
-  library(data.table)
-  grid <- setorderv(g, var)
-  grid <- grid %>% dplyr::select(any_of(var)) %>%
+ revg <- expand.grid(rev(levelsvar))
+ grid <- rev(revg)
+ grid <- grid %>% dplyr::select(any_of(var)) %>%
             mutate_at(var, factor)
-  pp <- grid %>%
+ pp    <- grid %>%
         mutate(pp_seq = row_number()) %>%
         dplyr::select(pp_seq, everything() )
   #H-----------------------------------
@@ -901,7 +913,7 @@ fn_t_design_matrix <- function() {
   #H-----------------------------------
   ##  Create the global weight  ----
   (resppop <- nrow(aa))
-  (rrate  <- nrow(aa)/popsize)
+  (rrate   <- nrow(aa)/popsize)
   aa_ <-  aa %>%
             mutate(seq = row_number(),
                finalwgt = 1/rrate)
@@ -938,10 +950,10 @@ fn_t_design_matrix <- function() {
   pall <- pp %>% full_join(matched_wgtmi)
   pall <- pall %>%
           relocate(pp_seq, .after = last_col())
-    # for user manual
-    # missing  <- nrow(mi); missing
-    # ppaafrom <- nrow(ppaa) - missing - 4
-    # ppaato   <- ppaafrom + 10
+        # for user manual
+        # missing  <- nrow(mi); missing
+        # ppaafrom <- nrow(ppaa) - missing - 4
+        # ppaato   <- ppaafrom + 10
   # print(ppaa[ppaafrom: ppaato, ])
   #H--------------------------------------
   ## 4) pp_design_matrix  ----
@@ -982,7 +994,7 @@ fn_t_design_matrix <- function() {
     assign("aa_", aa_, .GlobalEnv)
     assign("t_design_matrix", t_design_matrix, .GlobalEnv)
     assign("design_matrix", design_matrix, .GlobalEnv)
-  cat("--- End of fn_t_design_matrix ---")
+  cat("--- End of fn_t_design_matrix --- \n")
 }
 
 
@@ -990,6 +1002,7 @@ fn_t_design_matrix <- function() {
 ## > 4 fn_t_R_indicator ----
 ## Using Matrix, compute R-indicators
 #=========================================
+
 fn_t_R_indicator <-  function() {
   numcat <- ncol(design_matrix) - ncol(aa) - 2 ; numcat
     assign("numcat",  numcat, .GlobalEnv)
@@ -1001,9 +1014,7 @@ fn_t_R_indicator <-  function() {
   ## 1) Calculate propensity scores  ----
   #H-----------------------------------
   gh   <- gh %>% mutate(gg = sqrt(piinv))
-    # head(gh[, c("seq", "gg", "piinv",
-    #        "wgt_nnn")])
-  gg   <- gh[, "gg"]         # Not matrix
+  gg   <- gh[, "gg"]         # column vector
   pxm  <-  px * gg           # weighted_psam
   xxpm <-  t(pxm) %*% pxm
   rxm  <-  rx * gg           # weighted_rsam
@@ -1016,23 +1027,18 @@ fn_t_R_indicator <-  function() {
   yyyp  <- as.numeric(popsize/resppop) * xxpm
   yyyr  <- as.numeric(popsize/resppop) * xxrm
   ttp   <- as.numeric(popsize) * zzp
-  # yyyp = finalwgt X xxp(crossproduct of psam)
-  # ttp  = popsize  X zzp(crossproduct of popmean)
   gzmix <- yyyr + ttp
-  # Update: Apr2025
-  # gzpop <- yyyp + ttp # previously
-  gzpop <- popcov
+  # gzpop_old <- yyyp + ttp # previously
+  gzpop <- popcov           # Updated: Apr2025
   # computes the Moore-Penrose Generalized
   # INVerse of matrix
   library("MASS")
   bbmix <- ginv(gzmix)
   bbp   <- ginv(gzpop)
-  # Weights
   # Treat weightf, nf as matrix (not column vectors)
   nf      <- as.matrix(gh[, "responsesamp1"])
   weightf <- as.matrix(gh[, "piinv"])
   cnf     <- weightf * nf
-  # Prep
   des_col <- c(paste0("des",  1:numcat))
   r       <- as.matrix(gh[, des_col])
   ccw     <- t(r) %*% cnf
@@ -1045,17 +1051,8 @@ fn_t_R_indicator <-  function() {
   # Save as user-friendly object names
   prop_mix  <- roimix
   prop_pop  <- roipop
-  #H---------------------------------
-  ## 2) add weighted prop score ----
-  #H---------------------------------
-  # to be used in partial R-indicators
-  # rindicmix is gh_prop_mix
-  gh_prop_mix  <- cbind(gh, prop_mix) %>%
-     mutate(roi = prop_mix) %>%
-     mutate(roi_wgt = roi * wgt_nnn) %>%
-     relocate(wgt_nnn, piinv, .after = last_col())
   #H--------------------------------------
-  ## 3) Compute R-indicators ----
+  ##>> 3) Compute R-indicators ----
   #H--------------------------------------
   # use propensity weighting to adjust for coverage bias
   ee1b <- as.data.frame(weightf * roimix)
@@ -1073,18 +1070,51 @@ fn_t_R_indicator <-  function() {
     print(paste0("variance is ", var_s2T11b))
   # R-indicators: 1-SD(var_of_propensityscores)
   # e.g., 1-sqrt(0.06349736)
-  r_ind1b <- 1 - sqrt(var_s2T11b) # prop_mix-based
   r_ind1c <- 1 - sqrt(var_s2T11c) # prop_pop-based
-  prop_mix_based_R_indicator <- unname(r_ind1b)
+  r_ind1b <- 1 - sqrt(var_s2T11b) # prop_mix-based
   prop_pop_based_R_indicator <- unname(r_ind1c)
-        prop_pop_based_R_indicator
+  prop_mix_based_R_indicator <- unname(r_ind1b)
+  cat("--- R_indicators computed --- \n")
+  assign("prop_mix", prop_mix, .GlobalEnv)
+  assign("prop_pop", prop_pop, .GlobalEnv)
+  assign("prop_pop_based_R_indicator", prop_pop_based_R_indicator, .GlobalEnv)
+  assign("prop_mix_based_R_indicator", prop_mix_based_R_indicator, .GlobalEnv)
+  #H---------------------------------
+  ##>> 4) Create gh_prop ----
+  ##  corresponds to rindicmix
+  #H---------------------------------
+  type0 <- ifelse(exists("type"), type, 2)
+  if (type0 == 2) {
+   gh_prop  <- cbind(gh, prop_mix) %>%
+     mutate(roi = prop_mix) %>%
+     mutate(roi_wgt = roi * wgt_nnn) %>%
+     relocate(wgt_nnn, piinv, .after = last_col())
+    print(paste0("type 2 R_indicator is ", prop_mix_based_R_indicator))
   R_indicator <- prop_mix_based_R_indicator
-      R_indicator;
-    print(paste0("R_indicator is ", R_indicator))
-  assign("gh_prop_mix", gh_prop_mix, .GlobalEnv)
+  assign("gh_prop", gh_prop, .GlobalEnv)
   assign("R_indicator", R_indicator, .GlobalEnv)
   return(R_indicator)
-  cat("--- End of fn_t_R_indicator ---")
+  } else if (type0 == 1) {
+   gh_prop  <- cbind(gh, prop_pop) %>%
+     mutate(roi = prop_pop) %>%
+     mutate(roi_wgt = roi * wgt_nnn) %>%
+     relocate(wgt_nnn, piinv, .after = last_col())
+    print(paste0("type 1 R_indicator is ", prop_pop_based_R_indicator))
+  R_indicator <- prop_pop_based_R_indicator
+  assign("gh_prop", gh_prop, .GlobalEnv)
+  assign("R_indicator", R_indicator, .GlobalEnv)
+  return(R_indicator)
+  } else {
+   gh_prop  <- cbind(gh, prop_mix) %>%
+     mutate(roi = prop_mix) %>%
+     mutate(roi_wgt = roi * wgt_nnn) %>%
+     relocate(wgt_nnn, piinv, .after = last_col())
+    print(paste0("type 2 R_indicator is ", prop_mix_based_R_indicator))
+  R_indicator <- prop_mix_based_R_indicator
+  assign("gh_prop", gh_prop, .GlobalEnv)
+  assign("R_indicator", R_indicator, .GlobalEnv)
+  return(R_indicator)
+  }
 }
 
 
@@ -1093,9 +1123,9 @@ fn_t_R_indicator <-  function() {
 #=========================================
 fn_t_rindicatorall <- function() {
     #H------------------------------------
-    ## weighted propensity scores ----
+    ##>> weighted propensity scores ----
     #H------------------------------------
-          df  <- gh_prop_mix
+          df  <- gh_prop
           ws_list <- list()
           wr_list <- list()
           w_list  <- list()
@@ -1133,10 +1163,10 @@ fn_t_rindicatorall <- function() {
         "level", "fbar", "mrphat")
       fbar_mrphat$seq <- seq.int(nrow(fbar_mrphat))
 
-      #H------------------------------------
-      ## 2. Overall mean of propensities ----
-      #H------------------------------------
-      df <- gh_prop_mix
+    #H------------------------------------
+    ##>> Overall mean of propensities ----
+    #H------------------------------------
+      df <- gh_prop
       mrphatall <- sum(df$roi_wgt) / sum(df$wgt_nnn)
       # left of the report, by dummy, fbar_mrphat_
       fbar_mrphat_  <- data.frame(fbar_mrphat, mrphatall)
@@ -1153,5 +1183,7 @@ fn_t_rindicatorall <- function() {
       assign("mrphat", mrphat, .GlobalEnv)
       assign("mrphatall", mrphatall, .GlobalEnv)
       return(rindicatorall)
-  cat("--- End of fn_t_rindicatorall ---")
+  cat("--- End of fn_t_rindicatorall --- \n")
 }
+
+
