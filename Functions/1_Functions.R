@@ -544,7 +544,7 @@ fn_des_pop_respmean <- function() {
 }
 
 #H-----------------------------------
-##>> 3 fn_gh (REPEAT)
+## >> 3 fn_gh (REPEAT)
 ## (both microdata and tablebased) ----
 ## Create diff_des_mean (gh)  ----
 #H-----------------------------------
@@ -574,7 +574,7 @@ fn_gh <-  function() {
 
 
 #H-----------------------------------
-##>> 4 fn_R_indicator ----
+## >> 4 fn_R_indicator ----
 #H-----------------------------------
 
 fn_R_indicator <- function() {
@@ -655,7 +655,7 @@ fn_R_indicator <- function() {
    gh_prop  <- cbind(gh, prop_mix) %>%
      mutate(roi = prop_mix)  %>%
      relocate(finalwgt, piinv, .after = last_col())
-    print(paste0("type 2 R_indicator is ", prop_mix_based_R_indicator))
+    print(paste0("Type 2 R_indicator is ", prop_mix_based_R_indicator))
   R_indicator <- prop_mix_based_R_indicator
   assign("gh_prop", gh_prop, .GlobalEnv)
   assign("R_indicator", R_indicator, .GlobalEnv)
@@ -664,7 +664,7 @@ fn_R_indicator <- function() {
    gh_prop  <- cbind(gh, prop_pop) %>%
      mutate(roi = prop_pop)  %>%
      relocate(finalwgt, piinv, .after = last_col())
-    print(paste0("type 1 R_indicator is ", prop_pop_based_R_indicator))
+    print(paste0("Type 1 R_indicator is ", prop_pop_based_R_indicator))
   R_indicator <- prop_pop_based_R_indicator
   assign("gh_prop", gh_prop, .GlobalEnv)
   assign("R_indicator", R_indicator, .GlobalEnv)
@@ -673,7 +673,7 @@ fn_R_indicator <- function() {
    gh_prop  <- cbind(gh, prop_mix) %>%
      mutate(roi = prop_mix)  %>%
      relocate(finalwgt, piinv, .after = last_col())
-    print(paste0("type 2 R_indicator is ", prop_mix_based_R_indicator))
+    print(paste0("Type 2 R_indicator is ", prop_mix_based_R_indicator))
   R_indicator <- prop_mix_based_R_indicator
   assign("gh_prop", gh_prop, .GlobalEnv)
   assign("R_indicator", R_indicator, .GlobalEnv)
@@ -1066,8 +1066,6 @@ fn_t_R_indicator <-  function() {
                 (s2term11b-(s2term21 * s2term21))
   var_s2T11c <- (popsize/(popsize-1)) *
                (s2term11c-(s2term21 * s2term21))
-    var_s2T11b ; var_s2T11c
-    print(paste0("variance is ", var_s2T11b))
   # R-indicators: 1-SD(var_of_propensityscores)
   # e.g., 1-sqrt(0.06349736)
   r_ind1c <- 1 - sqrt(var_s2T11c) # prop_pop-based
@@ -1089,7 +1087,7 @@ fn_t_R_indicator <-  function() {
      mutate(roi = prop_mix) %>%
      mutate(roi_wgt = roi * wgt_nnn) %>%
      relocate(wgt_nnn, piinv, .after = last_col())
-    print(paste0("type 2 R_indicator is ", prop_mix_based_R_indicator))
+    print(paste0("Type 2 R_indicator is ", prop_mix_based_R_indicator))
   R_indicator <- prop_mix_based_R_indicator
   assign("gh_prop", gh_prop, .GlobalEnv)
   assign("R_indicator", R_indicator, .GlobalEnv)
@@ -1099,7 +1097,7 @@ fn_t_R_indicator <-  function() {
      mutate(roi = prop_pop) %>%
      mutate(roi_wgt = roi * wgt_nnn) %>%
      relocate(wgt_nnn, piinv, .after = last_col())
-    print(paste0("type 1 R_indicator is ", prop_pop_based_R_indicator))
+    print(paste0("Type 1 R_indicator is ", prop_pop_based_R_indicator))
   R_indicator <- prop_pop_based_R_indicator
   assign("gh_prop", gh_prop, .GlobalEnv)
   assign("R_indicator", R_indicator, .GlobalEnv)
@@ -1109,7 +1107,7 @@ fn_t_R_indicator <-  function() {
      mutate(roi = prop_mix) %>%
      mutate(roi_wgt = roi * wgt_nnn) %>%
      relocate(wgt_nnn, piinv, .after = last_col())
-    print(paste0("type 2 R_indicator is ", prop_mix_based_R_indicator))
+    print(paste0("Type 2 R_indicator is ", prop_mix_based_R_indicator))
   R_indicator <- prop_mix_based_R_indicator
   assign("gh_prop", gh_prop, .GlobalEnv)
   assign("R_indicator", R_indicator, .GlobalEnv)

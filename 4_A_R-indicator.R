@@ -64,10 +64,10 @@ head(aa)
 ##> Step 3: Compute R-indicators ----
 #H-----------------------------------
 
-# run the master function (default is type 2)
+# run the master function (default is Type 2)
 fn_RUN_R_indicator()
 
-# run the master function for type 1
+# run the master function for Type 1
 # type <- 1
 # fn_RUN_R_indicator()
 
