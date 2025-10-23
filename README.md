@@ -36,10 +36,10 @@ discussion on the distance metrics and R-indicators.
 
 ## Impact Case Study
 
-The current methodology was adopted by the ONS, and a working paper is
+The current methodology was adopted by the ONS, and a working paper was
 published on 8 December 2023.
 
-The ONS tested and produced a report for an administrative dataset for
+The report used an administrative dataset for
 one selected local authority - the admin-based housing by ethnicity
 dataset (ABHED).
 
