@@ -32,7 +32,7 @@ discussion on the distance metrics and R-indicators.
 -   v2.2 Feb 2024 R-indicator formula updated
 -   v2.3 Feb 2024 Minor updates
 -   v3.0 May 2025 Bivariate counts added & poprespmean streamlined
--   v3.1 Aug 2025 R-indicator types added
+-   v3.2 Aug 2025 R-indicator types added
 
 ## Impact Case Study
 
