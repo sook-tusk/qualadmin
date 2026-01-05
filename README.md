@@ -57,5 +57,6 @@ Office for National Statistics (ONS), released 8 December 2023, ONS
 website, methodology, Quality indicators for representativeness in
 administrative data: R-indicators and distance metrics.
 
-Shlomo, Natalie and Kim, Sook. (2025). Quality Indicators for
-Representation in Administrative Data. Survey Methodology. In press.
+Shlomo, Natalie and Kim, Sook (2025). Quality Indicators for
+representation in administrative data. Survey Methodology, 51(2), 509-532. 
+Available at https://www150.statcan.gc.ca/n1/pub/12-001-x/2025002/article/00006-eng.htm?cmp=cwe-cae
